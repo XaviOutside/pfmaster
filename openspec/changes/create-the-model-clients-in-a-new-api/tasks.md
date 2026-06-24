@@ -47,15 +47,15 @@ Chain strategy: feature-branch-chain
 
 ## Phase 2 — Domain + Application (PR 2)
 
-- [ ] **T15** · `api/clients/domain/Client.ts` — `ClientStatus = 0 | 1`, `Client` interface, `CreateClientInput`, `UpdateClientInput`. No framework imports. · Spec: client-management/req-1 · Est: 20 lines · Dep: T10
-- [ ] **T16** · `api/clients/domain/ClientErrors.ts` — `ClientNotFoundError`, `ClientValidationError` (extend Error, set name). · Spec: client-management/req-1 · Est: 15 lines · Dep: T15
-- [ ] **T17** · `api/clients/domain/IClientRepository.ts` — interface: `create`, `findById`, `findAll`, `update`, `softDelete`, `search`. Domain types only, no Prisma. · Spec: client-management/req-2, client-search/req-3 · Est: 15 lines · Dep: T15
-- [ ] **T18** · **RED+GREEN** `api/clients/application/CreateClient.ts` + `.test.ts` — test: created with status=1, missing name → `ClientValidationError` + repo not called, default status active. Minimum code to pass. · Spec: client-management/req-3 · Est: 50 lines · Dep: T16, T17
-- [ ] **T19** · **RED+GREEN** `api/clients/application/GetClient.ts` + `.test.ts` — test: returns entity, null → `ClientNotFoundError`, deletedAt non-null → `ClientNotFoundError`. · Spec: client-management/req-4 · Est: 40 lines · Dep: T16, T17
-- [ ] **T20** · **RED+GREEN** `api/clients/application/ListClients.ts` + `.test.ts` — test: returns array, page=0 → `ClientValidationError`, limit=200 → `ClientValidationError`, defaults page=1 limit=20. · Spec: client-management/req-5 · Est: 45 lines · Dep: T16, T17
-- [ ] **T21** · **RED+GREEN** `api/clients/application/UpdateClient.ts` + `.test.ts` — test: calls update + returns entity, null → not-found, deletedAt → not-found, repo.update not called on error. · Spec: client-management/req-6 · Est: 50 lines · Dep: T16, T17
-- [ ] **T22** · **RED+GREEN** `api/clients/application/SoftDeleteClient.ts` + `.test.ts` — test: calls softDelete, already deleted → not-found + softDelete not called. · Spec: client-management/req-7 · Est: 40 lines · Dep: T16, T17
-- [ ] **T23** · **RED+GREEN** `api/clients/application/SearchClients.ts` + `.test.ts` — test: sanitizes before repo, empty → [] without calling repo, operators-only → [], returns matches. · Spec: client-search/req-2 · Est: 45 lines · Dep: T12, T16, T17
+- [x] **T15** · `api/clients/domain/Client.ts` — `ClientStatus = 0 | 1`, `Client` interface, `CreateClientInput`, `UpdateClientInput`. No framework imports. · Spec: client-management/req-1 · Est: 20 lines · Dep: T10
+- [x] **T16** · `api/clients/domain/ClientErrors.ts` — `ClientNotFoundError`, `ClientValidationError`, `ClientAlreadyDeletedError` (extend Error, set name). · Spec: client-management/req-1 · Est: 15 lines · Dep: T15
+- [x] **T17** · `api/clients/domain/IClientRepository.ts` — interface: `create`, `findById`, `findAll`, `update`, `softDelete`, `search`. Domain types only, no Prisma. · Spec: client-management/req-2, client-search/req-3 · Est: 15 lines · Dep: T15
+- [x] **T18** · **RED+GREEN** `api/clients/application/CreateClient.ts` + `.test.ts` — test: created with status=1, missing name → `ClientValidationError` + repo not called, default status active. Minimum code to pass. · Spec: client-management/req-3 · Est: 50 lines · Dep: T16, T17
+- [x] **T19** · **RED+GREEN** `api/clients/application/GetClient.ts` + `.test.ts` — test: returns entity, null → `ClientNotFoundError`, deletedAt non-null → `ClientNotFoundError`. · Spec: client-management/req-4 · Est: 40 lines · Dep: T16, T17
+- [x] **T20** · **RED+GREEN** `api/clients/application/ListClients.ts` + `.test.ts` — test: returns array, page=0 → `ClientValidationError`, limit=200 → `ClientValidationError`, defaults page=1 limit=20. · Spec: client-management/req-5 · Est: 45 lines · Dep: T16, T17
+- [x] **T21** · **RED+GREEN** `api/clients/application/UpdateClient.ts` + `.test.ts` — test: calls update + returns entity, null → not-found, deletedAt → not-found, repo.update not called on error. · Spec: client-management/req-6 · Est: 50 lines · Dep: T16, T17
+- [x] **T22** · **RED+GREEN** `api/clients/application/SoftDeleteClient.ts` + `.test.ts` — test: calls softDelete, already deleted → `ClientAlreadyDeletedError` + softDelete not called. · Spec: client-management/req-7 · Est: 40 lines · Dep: T16, T17
+- [x] **T23** · **RED+GREEN** `api/clients/application/SearchClients.ts` + `.test.ts` — test: sanitizes before repo, empty → [] without calling repo, operators-only → [], returns matches. · Spec: client-search/req-2 · Est: 45 lines · Dep: T12, T16, T17
 
 ---
 
