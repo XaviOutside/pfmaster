@@ -1,0 +1,50 @@
+project:
+  name: pfmaster
+  description: Proyecto final del master
+  repository: https://github.com/XaviOutside/pfmaster
+  created: 2026-06-21
+  last_scanned: 2026-06-22
+
+stack:
+  language: undefined
+  framework: undefined
+  runtime: undefined
+  status: UNINITIALIZED
+  detected_markers:
+    - gitignore_patterns: node, npm, javascript ecosystem
+  notes: |
+    Project is bare (no source code yet). 
+    .gitignore suggests JavaScript/Node.js ecosystem.
+    Awaiting project definition and first commits.
+
+testing:
+  framework: undefined
+  runner: undefined
+  coverage_tool: undefined
+  strict_tdd: false
+  status: NOT_CONFIGURED
+  notes: |
+    No test runner detected.
+    Will be configured once source code and stack are defined.
+
+conventions:
+  code_style: undefined
+  linter: undefined
+  formatter: undefined
+  commit_style: conventional
+  pr_templates: github_default
+  branch_strategy: undefined
+
+artifacts:
+  proposal_dir: openspec/changes
+  spec_dir: openspec/changes
+  design_dir: openspec/changes
+  task_dir: openspec/changes
+
+persistence:
+  mode: hybrid
+  engram_enabled: true
+  openspec_enabled: true
+  sync_interval: session_close
+
+strict_tdd_mode: false
