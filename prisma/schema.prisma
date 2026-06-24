@@ -1,0 +1,25 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  email     String    @db.VarChar(150)
+  phone     String    @db.VarChar(20)
+  phone2    String?   @db.VarChar(20)
+  address   String?   @db.VarChar(255)
+  status    Int       @db.TinyInt @default(1) // 0=inactive, 1=active
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@fulltext([name, email])
+  @@map("clients")
+}
