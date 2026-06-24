@@ -3,7 +3,7 @@
 ## Overall Status
 **PR 1 of 3 — Bootstrap (T01–T14)**: ✅ Complete — 14/14 tasks done, 15/15 tests pass
 **PR 2 of 3 — Domain + Application (T15–T23c)**: ✅ Complete — 11/11 tasks done, 45/45 tests pass
-**PR 3 of 3 — Infrastructure + Interface (T24–T32)**: 🔲 Pending
+**PR 3 of 3 — Infrastructure + Interface (T24–T32)**: ✅ Complete — 9/9 tasks done, 64/64 unit tests + 10/10 integration tests pass
 
 ---
 
@@ -40,6 +40,20 @@
 - [x] **T23b** · **RED** `api/clients/application/SearchClients.test.ts` — 5 failing tests: results, sanitization, empty/operators-only/whitespace skips repo
 - [x] **T23c** · **GREEN** `api/clients/application/SearchClients.ts` — sanitizeFtsQuery before repo; returns [] without calling repo on blank sanitized term. All T23b tests pass.
 
+### Phase 3 — Infrastructure + Interface (PR 3)
+
+- [x] **T24** · `api/clients/interface/dtos/CreateClientDto.ts` — `{ name, email, phone, phone2?, address? }`.
+- [x] **T25** · `api/clients/interface/dtos/UpdateClientDto.ts` — all fields optional; no `status` field.
+- [x] **T26** · `api/clients/interface/dtos/ClientResponseDto.ts` — omits `deletedAt`; status as `'active'|'inactive'`; `createdAt`/`updatedAt` as ISO 8601 string; `toClientResponseDto()` mapper.
+- [x] **T27** · **RED** `api/clients/infrastructure/PrismaClientRepository.integration.test.ts` — 10 integration tests: create, findById (found/notFound/deletedAt), findAll (excludes deleted, pagination), update, softDelete (sets timestamp + findById returns null), search (excludes deleted + no-match).
+- [x] **T28** · **GREEN** `api/clients/infrastructure/PrismaClientRepository.ts` — implements `IClientRepository`; all reads filter `deletedAt: null`; `softDelete` sets timestamp; `search` uses `$queryRaw` tagged template with `MATCH(name,email) AGAINST(${sanitized} IN BOOLEAN MODE) AND deleted_at IS NULL LIMIT 50`. All 10 T27 tests pass.
+- [x] **T29** · **RED** `api/clients/interface/ClientController.test.ts` — 19 supertest tests (mocked use cases): POST→201, GET list→200, GET /search→200+400+200[], GET /:id→200+404+422, PUT→200+404+422(status), PATCH deactivate→200+404, DELETE→204+404+409, 500 no stack.
+- [x] **T30** · **GREEN** `api/clients/interface/ClientController.ts` — methods: create, getClient, listClients, updateClient, deactivateClient, deleteClient, searchClients. Error mapping: ClientNotFoundError→404, ClientValidationError→422, ClientAlreadyDeletedError→409, unknown→500 (no stack). `String(req.params['id'])` for strict TS compliance. PII-free logs. All 19 T29 tests pass.
+- [x] **T31** · `api/clients/interface/clientRouter.ts` — `createClientRouter(controller)` factory; `GET /search` declared before `GET /:id`; 7 routes total.
+- [x] **T32** · Updated `api/index.ts` — wires PrismaClientRepository → use cases → ClientController → `createClientRouter()`; mounts at `/api/v1/clients`.
+
+Also created: `vitest.integration.config.ts` (gap from PR 1 — referenced in package.json but missing).
+
 ---
 
 ## Files Created — PR 1
@@ -60,7 +74,7 @@
 | `api/shared/utils/sanitizeFtsQuery.ts` | Created | FTS input sanitizer |
 | `api/shared/utils/sanitizeFtsQuery.test.ts` | Created | 13 unit tests |
 | `api/index.ts` | Created | Express app entry point |
-| `api/index.test.ts` | Created | 2 integration tests |
+| `api/index.test.ts` | Created | 2 supertest tests |
 
 ## Files Created — PR 2
 
@@ -81,6 +95,22 @@
 | `api/clients/application/SearchClients.ts` | Created | SearchClients use case with FTS sanitization |
 | `api/clients/application/SearchClients.test.ts` | Created | 5 unit tests |
 
+## Files Created — PR 3
+
+| File | Action | Description |
+|------|--------|-------------|
+| `api/clients/interface/dtos/CreateClientDto.ts` | Created | Request DTO for POST /clients |
+| `api/clients/interface/dtos/UpdateClientDto.ts` | Created | Request DTO for PUT /clients/:id (no status) |
+| `api/clients/interface/dtos/ClientResponseDto.ts` | Created | Response DTO + toClientResponseDto() mapper |
+| `api/clients/infrastructure/PrismaClientRepository.integration.test.ts` | Created | 10 integration tests (Docker MySQL) |
+| `api/clients/infrastructure/PrismaClientRepository.ts` | Created | Prisma implementation of IClientRepository |
+| `api/clients/interface/ClientController.ts` | Created | Express controller with error mapping |
+| `api/clients/interface/ClientController.test.ts` | Created | 19 supertest tests |
+| `api/clients/interface/clientRouter.ts` | Created | createClientRouter() factory (7 routes) |
+| `vitest.integration.config.ts` | Created | Integration test config (gap fix from PR 1) |
+| `prisma/migrations/20260624175955_create_clients_table/migration.sql` | Created | clients table + FULLTEXT index + TINYINT status |
+| `api/index.ts` | Modified | Mount clientRouter at /api/v1/clients |
+
 ---
 
 ## Test Results
@@ -99,7 +129,21 @@ Test Files  6 passed (6)
   Duration  326ms
 ```
 
-TypeScript: `tsc --noEmit` exits 0 — zero errors across both PRs.
+### PR 3 Final — Unit Tests
+```
+Test Files  7 passed (7)
+     Tests  64 passed (64)
+  Duration  420ms
+```
+
+### PR 3 Final — Integration Tests (npm run test:integration)
+```
+Test Files  1 passed (1)
+     Tests  10 passed (10)
+  Duration  218ms
+```
+
+TypeScript: `tsc --noEmit` exits 0 — zero errors across all three PRs.
 
 ---
 
@@ -121,6 +165,13 @@ TypeScript: `tsc --noEmit` exits 0 — zero errors across both PRs.
 | T22+T23 Update+SoftDelete+Deactivate | ✅ fails (file missing) | ✅ all guards + ClientAlreadyDeletedError, 10/10 pass | ✅ clean |
 | T23b+T23c SearchClients | ✅ fails (file missing) | ✅ sanitize-before-repo, skip on empty, 5/5 pass | ✅ clean |
 
+### PR 3
+
+| Task | RED | GREEN | REFACTOR |
+|------|-----|-------|----------|
+| T26+T27 PrismaClientRepository | ✅ impl missing → all 10 fail | ✅ Prisma + $queryRaw FTS, 10/10 pass | ✅ mapToClient() extracted |
+| T28+T29 ClientController | ✅ clientRouter missing → suite fails | ✅ controller + router factory, 19/19 pass | ✅ String(req.params) for strict TS |
+
 ---
 
 ## Deviations from Design
@@ -132,9 +183,15 @@ TypeScript: `tsc --noEmit` exits 0 — zero errors across both PRs.
 
 ### PR 2
 1. **`ClientAlreadyDeletedError` added** — the orchestrator prompt specified this error class for `SoftDeleteClient` (already-deleted case). The design only listed `ClientNotFoundError + ClientValidationError`. Added all three to `ClientErrors.ts` without removing the others.
-2. **`UpdateClientInput.status?` added** — `DeactivateClient` needs to call `repository.update(id, { status: 0 })`. `UpdateClientInput` had no status field. Added optional `status?: ClientStatus` with JSDoc noting it's only for `DeactivateClient` — never exposed in `UpdateClientDto`.
+2. **`UpdateClientInput.status?` added** — `DeactivateClient` needs to call `repository.update(id, { status: 0 })`. Added optional `status?: ClientStatus` with JSDoc noting it's only for `DeactivateClient` — never exposed in `UpdateClientDto`.
 3. **`UpdateClient` explicitly strips status** — uses `Omit<UpdateClientInput, 'status'>` in its signature to enforce the immutability rule at the type level.
-4. **`DeactivateClient` added** — orchestrator specified this as a separate use case (for PATCH /clients/:id/deactivate). The design mentioned it in open questions but not as an explicit file. Implemented as `DeactivateClientUseCase`.
+4. **`DeactivateClient` added** — orchestrator specified this as a separate use case (for PATCH /clients/:id/deactivate). Implemented as `DeactivateClientUseCase`.
+
+### PR 3
+1. **`vitest.integration.config.ts` created here** — was referenced in package.json `test:integration` script from PR 1 but not created. Gap filled in PR 3.
+2. **`createClientRouter(controller)` factory instead of bare export** — the router receives a pre-built controller instance rather than instantiating its own, enabling proper dependency injection for test isolation. This is a design improvement that aligns with the DI principle.
+3. **`String(req.params['id'])` cast** — @types/express v5 returns `string | string[]` from bracket access; explicit cast required for strict TypeScript compliance.
+4. **`ClientResponseDto.status` returned as `'active'|'inactive'`** — design spec showed `status: 0|1` in the DTO interface but the orchestrator prompt explicitly confirmed `'active'|'inactive'` as human-readable. Prompt wins.
 
 ---
 
@@ -158,11 +215,23 @@ f6c35b4 chore: add docker-compose, mysql config, and env example
 
 ### PR 2 branch (`feature/clients-api-pr2`)
 ```
+3a6e99a docs: update apply-progress and tasks.md for PR 2 completion (T15-T23c)
 f20a245 feat(clients): implement SearchClients use case (green)
 8f65e7f feat(clients): implement UpdateClient, SoftDeleteClient, DeactivateClient use cases (green)
 6976513 feat(clients): implement GetClient and ListClients use cases (green)
 4504cdb test(clients): add CreateClient use case tests (red)
 cfffab4 feat(clients): add Client entity, IClientRepository interface, and domain errors
+```
+
+### PR 3 branch (`feature/clients-api-pr3`)
+```
+c349c90 feat(clients): mount clients router in api/index.ts
+2e46b09 feat(clients): implement ClientController and clientRouter (green)
+9c6b329 test(clients): add ClientController supertest tests (red)
+29b6508 feat(clients): implement PrismaClientRepository (green)
+6d627b6 test(clients): add PrismaClientRepository integration tests (red)
+3537965 feat(clients): add Prisma migration for clients table
+79459d7 feat(clients): add request/response DTOs
 ```
 
 ---
@@ -172,27 +241,11 @@ cfffab4 feat(clients): add Client entity, IClientRepository interface, and domai
 - **Mode**: Chained PR slice (feature-branch-chain)
 - **PR 1 unit**: Bootstrap — `feature/clients-api-pr1` → `feature/clients-api` (tracker)
 - **PR 2 unit**: Domain + Application — `feature/clients-api-pr2` → `feature/clients-api-pr1`
-- **PR 3 unit**: Infrastructure + Interface — `feature/clients-api-pr3` → `feature/clients-api-pr2` (pending)
-- **PR 2 review budget**: ~320 estimated lines
-
----
-
-## Remaining Tasks
-
-### Phase 3 — Infrastructure + Interface (PR 3)
-
-- [ ] T24 · `api/clients/interface/dtos/CreateClientDto.ts`
-- [ ] T25 · `api/clients/interface/dtos/UpdateClientDto.ts` — no status field
-- [ ] T26 · `api/clients/interface/dtos/ClientResponseDto.ts` — omits deletedAt
-- [ ] T27 · **RED** `api/clients/infrastructure/PrismaClientRepository.test.ts` — integration (Docker MySQL)
-- [ ] T28 · **GREEN** `api/clients/infrastructure/PrismaClientRepository.ts`
-- [ ] T29 · **RED** `api/clients/interface/ClientController.test.ts` — supertest
-- [ ] T30 · **GREEN** `api/clients/interface/ClientController.ts`
-- [ ] T31 · `api/clients/interface/clientRouter.ts`
-- [ ] T32 · Update `api/index.ts` — mount clientRouter at /api/v1/clients
+- **PR 3 unit**: Infrastructure + Interface — `feature/clients-api-pr3` → `feature/clients-api-pr2`
+- **PR 3 review budget**: ~377 estimated lines
 
 ---
 
 ## Next Recommended
 
-Review PR 2 (`feature/clients-api-pr2` → `feature/clients-api-pr1`), then apply PR 3 (T24–T32) on a new branch `feature/clients-api-pr3` targeting `feature/clients-api-pr2`.
+`sdd-verify` — all 3 PRs complete. Run full verification: `npm test` (64 unit), `npm run test:integration` (10 integration), `tsc --noEmit` (0 errors).
