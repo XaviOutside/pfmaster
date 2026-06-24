@@ -9,6 +9,8 @@ services:
       - '3000:3000'
     env_file:
       - .env
+    environment:
+      DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}"
     volumes:
       - .:/app
       - /app/node_modules

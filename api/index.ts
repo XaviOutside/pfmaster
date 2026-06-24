@@ -3,8 +3,8 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { logger } from './observability/logger';
 
-// Validate required environment variables at startup
-if (!process.env['DATABASE_URL']) {
+// Validate required environment variables at startup (skip in test environment)
+if (process.env['NODE_ENV'] !== 'test' && !process.env['DATABASE_URL']) {
   logger.error('DATABASE_URL environment variable is required but not set');
   process.exit(1);
 }
