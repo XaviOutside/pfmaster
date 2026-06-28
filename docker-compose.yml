@@ -21,6 +21,26 @@ services:
       - pfmaster-net
     command: npm run dev
 
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - '5173:5173'
+    env_file:
+      - .env
+    environment:
+      VITE_API_PROXY_TARGET: "http://api:3000"
+      VITE_API_BASE_URL: "http://localhost:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - pfmaster-net
+    command: npx vite --host 0.0.0.0 --port 5173
+
   db:
     image: mysql:8.0
     env_file:

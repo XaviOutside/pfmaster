@@ -14,7 +14,7 @@ export function listPets(
 ): Promise<Pet[]> {
   let url = `/pets?page=${page}&limit=${limit}`;
   if (clientId !== undefined) {
-    url += `&client_id=${clientId}`;
+    url += `&clientId=${clientId}`;
   }
   return http<Pet[]>(url);
 }

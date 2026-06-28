@@ -72,7 +72,7 @@ describe('listPets', () => {
 
     await listPets(1, 20, 10);
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets?page=1&limit=20&client_id=10',
+      '/api/v1/pets?page=1&limit=20&clientId=10',
       expect.anything(),
     );
   });

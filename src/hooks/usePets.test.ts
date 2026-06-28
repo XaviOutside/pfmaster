@@ -103,7 +103,7 @@ describe('usePets', () => {
     );
   });
 
-  it('setClientId resets to page 1 and fetches with client_id', async () => {
+  it('setClientId resets to page 1 and fetches with clientId', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -127,7 +127,7 @@ describe('usePets', () => {
     expect(result.current.page).toBe(1);
 
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets?page=1&limit=20&client_id=10',
+      '/api/v1/pets?page=1&limit=20&clientId=10',
       expect.anything(),
     );
   });
