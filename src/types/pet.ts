@@ -18,7 +18,7 @@ export type PetStatus = 'active' | 'inactive';
  */
 export interface Pet {
   id: number;
-  clientId: number;
+  client_id: number;
   name: string;
   species: string;
   breed: string;
@@ -33,7 +33,7 @@ export interface Pet {
 
 /** Payload for creating a new pet via POST /api/v1/pets. */
 export interface CreatePetInput {
-  clientId: number;
+  client_id: number;
   name: string;
   species: string;
   breed: string;

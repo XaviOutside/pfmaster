@@ -59,7 +59,7 @@ export default function PetDetailPage() {
 
   function handleViewClient() {
     if (pet) {
-      navigate(`/clients/${pet.clientId}`);
+      navigate(`/clients/${pet.client_id}`);
     }
   }
 
@@ -110,7 +110,7 @@ export default function PetDetailPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <PetDetailCard
         pet={pet}
-        clientName={`Client #${pet.clientId}`}
+        clientName={`Client #${pet.client_id}`}
         onEdit={handleEdit}
         onDeactivate={handleDeactivate}
         onReactivate={handleReactivate}

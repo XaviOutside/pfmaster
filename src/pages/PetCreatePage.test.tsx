@@ -54,7 +54,7 @@ const mockClients = [
 
 const createdPet = {
   id: 42,
-  clientId: 1,
+  client_id: 1,
   name: 'Max',
   species: 'Dog',
   breed: 'Golden Retriever',
@@ -175,7 +175,7 @@ describe('PetCreatePage', () => {
           statusCode: 422,
           fieldErrors: {
             name: 'A pet with this name already exists',
-            clientId: 'The client is inactive',
+            client_id: 'The client is inactive',
           },
         }),
     });
