@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { usePet } from '@/hooks/usePet';
 import { useDeactivatePet } from '@/hooks/usePetMutations';
 import { useServices } from '@/hooks/useServices';
-import { updateService } from '@/services/service';
+import { listServices, updateService } from '@/services/service';
 import type { Service } from '@/types/service';
 import PetDetailCard from '@/components/organisms/PetDetailCard';
 import ServiceTable from '@/components/organisms/ServiceTable';
 import ConfirmDialog from '@/components/molecules/ConfirmDialog';
+import Modal from '@/components/atoms/Modal';
+import Select from '@/components/atoms/Select';
 import Spinner from '@/components/atoms/Spinner';
 import Button from '@/components/atoms/Button';
 
@@ -30,6 +32,13 @@ export default function PetDetailPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'deactivate' | 'delete' | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  // Link Service modal state
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [unlinkedServices, setUnlinkedServices] = useState<Service[]>([]);
+  const [linkModalLoading, setLinkModalLoading] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState<string>('');
+  const [linking, setLinking] = useState(false);
 
   function handleDeactivate() {
     setConfirmAction('deactivate');
@@ -82,6 +91,38 @@ export default function PetDetailPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unlink failed';
       setActionError(message);
+    }
+  }
+
+  async function handleOpenLinkModal() {
+    setShowLinkModal(true);
+    setLinkModalLoading(true);
+    setActionError(null);
+    try {
+      const all = await listServices(1, 200);
+      setUnlinkedServices(all.filter((s) => s.petId === null));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load services';
+      setActionError(message);
+    } finally {
+      setLinkModalLoading(false);
+    }
+  }
+
+  async function handleLink() {
+    if (!selectedServiceId || !petId) return;
+    setLinking(true);
+    try {
+      await updateService(Number(selectedServiceId), { petId });
+      await refreshServices();
+      setShowLinkModal(false);
+      setSelectedServiceId('');
+      setUnlinkedServices([]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Link failed';
+      setActionError(message);
+    } finally {
+      setLinking(false);
     }
   }
 
@@ -190,6 +231,14 @@ export default function PetDetailPage() {
           ) : linkedServices.length === 0 ? (
             <div className="text-center py-6">
               <p className="text-sm text-gray-500">No linked services</p>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="mt-2"
+                onClick={handleOpenLinkModal}
+              >
+                Link a Service
+              </Button>
             </div>
           ) : (
             <ServiceTable
@@ -201,6 +250,60 @@ export default function PetDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Link Service Modal */}
+      <Modal
+        isOpen={showLinkModal}
+        onClose={() => {
+          setShowLinkModal(false);
+          setSelectedServiceId('');
+        }}
+        title="Link a Service"
+      >
+        {linkModalLoading ? (
+          <div className="flex justify-center py-4">
+            <Spinner size="sm" />
+          </div>
+        ) : unlinkedServices.length === 0 ? (
+          <p className="text-sm text-gray-500 py-4">No available services to link.</p>
+        ) : (
+          <>
+            <Select
+              label="Select a service"
+              options={[
+                { value: '', label: '— Select a service —' },
+                ...unlinkedServices.map((s) => ({
+                  value: String(s.id),
+                  label: `${s.name} ($${s.price.toFixed(2)})`,
+                })),
+              ]}
+              value={selectedServiceId}
+              onChange={(e) => setSelectedServiceId(e.target.value)}
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setShowLinkModal(false);
+                  setSelectedServiceId('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                loading={linking}
+                disabled={!selectedServiceId}
+                onClick={handleLink}
+              >
+                Link
+              </Button>
+            </div>
+          </>
+        )}
+      </Modal>
     </div>
   );
 }
