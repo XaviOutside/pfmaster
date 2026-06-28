@@ -86,7 +86,7 @@ Chain strategy: pending
 
 ## PR 11: Detail + Edit + ClientDetail + Routes
 
-- [ ] T-32 PetDetailPage — PetDetailCard, not-found message.
-- [ ] T-33 PetEditPage — pre-populated PetForm, redirect on save.
-- [ ] T-34 Modify ClientDetailPage — embed PetTable section, all states.
-- [ ] T-35 App.tsx — add 4 pet routes.
+- [x] T-32 PetDetailPage — PetDetailCard, not-found message.
+- [x] T-33 PetEditPage — pre-populated PetForm, redirect on save.
+- [x] T-34 Modify ClientDetailPage — embed PetTable section, all states.
+- [x] T-35 App.tsx — add 4 pet routes.
