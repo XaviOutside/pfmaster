@@ -1,8 +1,12 @@
 import { IPetRepository } from '../domain/IPetRepository';
+import { IServiceRepository } from '../../services/domain/IServiceRepository';
 import { PetNotFoundError, PetAlreadyDeletedError } from '../domain/PetErrors';
 
 export class SoftDeletePetUseCase {
-  constructor(private readonly repository: IPetRepository) {}
+  constructor(
+    private readonly repository: IPetRepository,
+    private readonly serviceRepository: IServiceRepository,
+  ) {}
 
   async execute(id: number): Promise<void> {
     const exists = await this.repository.existsById(id);
@@ -16,6 +20,9 @@ export class SoftDeletePetUseCase {
     if (!pet) {
       throw new PetAlreadyDeletedError(id);
     }
+
+    // Cascade: unlink all services linked to this pet before soft-deleting
+    await this.serviceRepository.unlinkAllByPetId(id);
 
     await this.repository.softDelete(id);
   }
