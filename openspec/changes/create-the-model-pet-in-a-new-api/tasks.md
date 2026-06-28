@@ -63,21 +63,21 @@ Chain strategy: pending
 
 ## PR 7: Frontend Types + Services
 
-- [ ] T-21 `src/types/pet.ts` — Pet interface, status/sex unions, DTOs.
-- [ ] T-22 Extract PaginatedResponse+ApiError to `src/shared/types.ts`, update imports.
-- [ ] T-23 RED+GREEN `src/services/pet.ts` — 7 API functions, mock fetch tests.
+- [x] T-21 `src/types/pet.ts` — Pet interface, status/sex unions, DTOs.
+- [x] T-22 Extract PaginatedResponse+ApiError to `src/shared/types.ts`, update imports.
+- [x] T-23 RED+GREEN `src/services/pet.ts` — 7 API functions, mock fetch tests.
 
 ## PR 8: Hooks
 
-- [ ] T-24 RED+GREEN usePets — paginated, clientId filter, 300ms debounce search.
-- [ ] T-25 RED+GREEN usePet — single pet, refetch, loading/error/not-found.
-- [ ] T-26 RED+GREEN usePetMutations — create, update, delete, deactivate.
+- [x] T-24 RED+GREEN usePets — paginated, clientId filter, 300ms debounce search.
+- [x] T-25 RED+GREEN usePet — single pet, refetch, loading/error/not-found.
+- [x] T-26 RED+GREEN usePetMutations — create, update, delete, deactivate.
 
 ## PR 9: Components
 
-- [ ] T-27 PetTable — organism, columns: name/species/breed/status, link rows.
-- [ ] T-28 PetForm — molecule, active-clients dropdown, blur+submit validation.
-- [ ] T-29 PetDetailCard — organism, all fields, owner link, action buttons.
+- [x] T-27 PetTable — organism, columns: name/species/breed/status, link rows.
+- [x] T-28 PetForm — molecule, active-clients dropdown, blur+submit validation.
+- [x] T-29 PetDetailCard — organism, all fields, owner link, action buttons.
 
 ## PR 10: List + Create Pages
 
