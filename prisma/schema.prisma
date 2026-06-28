@@ -24,3 +24,22 @@ model Client {
   @@fulltext([name, email])
   @@map("clients")
 }
+
+model Pet {
+  id          Int       @id @default(autoincrement())
+  client_id   Int       // ref: clients.id — no FK constraint (per project rules)
+  name        String    @db.VarChar(255)
+  species     String    @db.VarChar(100)
+  breed       String    @db.VarChar(255)
+  sex         Int       @db.TinyInt @default(0) // 0=unknown, 1=male, 2=female
+  dateOfBirth DateTime? @map("date_of_birth") @db.Date
+  weightKg    Decimal?  @map("weight_kg") @db.Decimal(5, 2)
+  notes       String?   @db.Text
+  status      Int       @db.TinyInt @default(1) // 0=inactive, 1=active
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@fulltext([name, breed, notes])
+  @@map("pets")
+}
