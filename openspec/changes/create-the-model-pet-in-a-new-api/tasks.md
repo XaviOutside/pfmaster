@@ -81,8 +81,8 @@ Chain strategy: pending
 
 ## PR 10: List + Create Pages
 
-- [ ] T-30 RED+GREEN PetListPage — spinner, empty+CTA, error+retry, search bar.
-- [ ] T-31 PetCreatePage — PetForm, redirect on success, inline 422 errors.
+- [x] T-30 RED+GREEN PetListPage — spinner, empty+CTA, error+retry, search bar.
+- [x] T-31 PetCreatePage — PetForm, redirect on success, inline 422 errors.
 
 ## PR 11: Detail + Edit + ClientDetail + Routes
 
