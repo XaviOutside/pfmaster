@@ -1,0 +1,18 @@
+/**
+ * Repository interface for the pets bounded context.
+ * Domain types only — no Prisma, no Express, no framework imports.
+ */
+import { Pet, CreatePetInput, UpdatePetInput } from './Pet';
+
+export interface IPetRepository {
+  create(data: CreatePetInput): Promise<Pet>;
+  findById(id: number): Promise<Pet | null>;
+  findAll(page: number, limit: number): Promise<Pet[]>;
+  findAllByClientId(clientId: number, page: number, limit: number): Promise<Pet[]>;
+  update(id: number, data: UpdatePetInput): Promise<Pet>;
+  softDelete(id: number): Promise<void>;
+  search(sanitizedQuery: string): Promise<Pet[]>;
+  clientExistsAndIsActive(clientId: number): Promise<boolean>;
+  deactivateAllByClientId(clientId: number): Promise<void>;
+  softDeleteAllByClientId(clientId: number): Promise<void>;
+}
