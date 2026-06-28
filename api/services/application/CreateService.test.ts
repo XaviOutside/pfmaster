@@ -10,6 +10,7 @@ const mockService: Service = {
   description: 'Complete grooming',
   durationMinutes: 60,
   price: 5000,
+  petId: null,
   status: SERVICE_STATUS.ACTIVE,
   createdAt: new Date('2026-01-01T00:00:00Z'),
   updatedAt: new Date('2026-01-01T00:00:00Z'),
@@ -24,6 +25,7 @@ function makeRepository(): IServiceRepository {
     update: vi.fn(),
     softDelete: vi.fn(),
     search: vi.fn(),
+    unlinkAllByPetId: vi.fn(),
   };
 }
 
@@ -134,5 +136,30 @@ describe('CreateServiceUseCase', () => {
   it('allows durationMinutes to be undefined (optional)', async () => {
     await useCase.execute({ name: 'Bath', price: 2500 });
     expect(repository.create).toHaveBeenCalledOnce();
+  });
+
+  it('passes petId through to repository.create when provided', async () => {
+    const input: CreateServiceInput = {
+      name: 'Pet Groom',
+      price: 5000,
+      petId: 5,
+    };
+
+    await useCase.execute(input);
+
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ petId: 5 }),
+    );
+  });
+
+  it('does not send petId when it is not provided', async () => {
+    const input: CreateServiceInput = {
+      name: 'Full Groom',
+      price: 5000,
+    };
+
+    await useCase.execute(input);
+
+    expect(repository.create).toHaveBeenCalledWith(input);
   });
 });

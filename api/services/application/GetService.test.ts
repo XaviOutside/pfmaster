@@ -10,6 +10,7 @@ const mockService: Service = {
   description: 'Complete grooming',
   durationMinutes: 60,
   price: 5000,
+  petId: null,
   status: SERVICE_STATUS.ACTIVE,
   createdAt: new Date('2026-01-01T00:00:00Z'),
   updatedAt: new Date('2026-01-01T00:00:00Z'),
@@ -24,6 +25,7 @@ function makeRepository(overrides?: Partial<IServiceRepository>): IServiceReposi
     update: vi.fn(),
     softDelete: vi.fn(),
     search: vi.fn(),
+    unlinkAllByPetId: vi.fn(),
     ...overrides,
   };
 }

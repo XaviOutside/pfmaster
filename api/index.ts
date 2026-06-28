@@ -79,7 +79,7 @@ const petController = new PetController(
   new ListPetsUseCase(petRepository),
   new UpdatePetUseCase(petRepository),
   new DeactivatePetUseCase(petRepository),
-  new SoftDeletePetUseCase(petRepository),
+  new SoftDeletePetUseCase(petRepository, serviceRepository),
   new SearchPetsUseCase(petRepository),
 );
 app.use('/api/v1/pets', createPetRouter(petController));

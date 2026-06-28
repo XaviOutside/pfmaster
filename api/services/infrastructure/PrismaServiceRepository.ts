@@ -1,6 +1,6 @@
 import { prisma } from '@api/shared/infrastructure/prisma';
 import { Service, CreateServiceInput, UpdateServiceInput, SERVICE_STATUS } from '../domain/Service';
-import { IServiceRepository } from '../domain/IServiceRepository';
+import { IServiceRepository, FindAllParams } from '../domain/IServiceRepository';
 
 /**
  * Prisma implementation of IServiceRepository.
@@ -11,6 +11,7 @@ import { IServiceRepository } from '../domain/IServiceRepository';
  * - search uses $queryRaw with tagged template for parameterized FTS binding
  * - Prisma model results are mapped to domain Service type (camelCase, Date objects)
  * - No domain errors thrown here — caller (use cases / controller) handles error mapping
+ * - petId is a passive reference — no cross-domain query, no FK constraint
  */
 export class PrismaServiceRepository implements IServiceRepository {
   async create(data: CreateServiceInput): Promise<Service> {
@@ -20,6 +21,7 @@ export class PrismaServiceRepository implements IServiceRepository {
         description: data.description ?? null,
         durationMinutes: data.durationMinutes ?? null,
         price: data.price,
+        petId: data.petId ?? null,
         // status defaults to 1 (active) via schema default
       },
     });
@@ -49,13 +51,18 @@ export class PrismaServiceRepository implements IServiceRepository {
     return row !== null;
   }
 
-  async findAll(page: number, limit: number): Promise<Service[]> {
-    const skip = (page - 1) * limit;
+  async findAll(params: FindAllParams): Promise<Service[]> {
+    const skip = (params.page - 1) * params.limit;
+
+    const where: Record<string, unknown> = { deletedAt: null };
+    if (params.petId !== undefined) {
+      where['petId'] = params.petId;
+    }
 
     const rows = await prisma.service.findMany({
-      where: { deletedAt: null },
+      where,
       skip,
-      take: limit,
+      take: params.limit,
       orderBy: { id: 'asc' },
     });
 
@@ -69,6 +76,7 @@ export class PrismaServiceRepository implements IServiceRepository {
     if (data.description !== undefined) updatePayload['description'] = data.description;
     if (data.durationMinutes !== undefined) updatePayload['durationMinutes'] = data.durationMinutes;
     if (data.price !== undefined) updatePayload['price'] = data.price;
+    if (data.petId !== undefined) updatePayload['petId'] = data.petId;
     if (data.status !== undefined) updatePayload['status'] = data.status;
 
     const row = await prisma.service.update({
@@ -86,6 +94,18 @@ export class PrismaServiceRepository implements IServiceRepository {
     });
   }
 
+  async unlinkAllByPetId(petId: number): Promise<void> {
+    await prisma.service.updateMany({
+      where: {
+        petId,
+        deletedAt: null,
+      },
+      data: {
+        petId: null,
+      },
+    });
+  }
+
   async search(sanitizedQuery: string): Promise<Service[]> {
     // $queryRaw with tagged template ensures parameterized binding — no string interpolation
     const rows = await prisma.$queryRaw<Array<{
@@ -94,12 +114,13 @@ export class PrismaServiceRepository implements IServiceRepository {
       description: string | null;
       duration_minutes: number | null;
       price: number;
+      pet_id: number | null;
       status: number;
       created_at: Date;
       updated_at: Date;
       deleted_at: Date | null;
     }>>`
-      SELECT id, name, description, duration_minutes, price, status,
+      SELECT id, name, description, duration_minutes, price, pet_id, status,
              created_at, updated_at, deleted_at
       FROM services
       WHERE MATCH(name, description) AGAINST(${sanitizedQuery} IN BOOLEAN MODE)
@@ -113,6 +134,7 @@ export class PrismaServiceRepository implements IServiceRepository {
       description: row.description,
       durationMinutes: row.duration_minutes,
       price: row.price,
+      petId: row.pet_id,
       status: row.status as 0 | 1,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
@@ -130,6 +152,7 @@ export class PrismaServiceRepository implements IServiceRepository {
     description: string | null;
     durationMinutes: number | null;
     price: number;
+    petId: number | null;
     status: number;
     createdAt: Date;
     updatedAt: Date;
@@ -141,6 +164,7 @@ export class PrismaServiceRepository implements IServiceRepository {
       description: row.description,
       durationMinutes: row.durationMinutes,
       price: row.price,
+      petId: row.petId,
       status: row.status as 0 | 1,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

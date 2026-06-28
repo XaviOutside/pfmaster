@@ -9,6 +9,7 @@ const makeService = (id: number, name: string): Service => ({
   description: null,
   durationMinutes: null,
   price: 1000,
+  petId: null,
   status: SERVICE_STATUS.ACTIVE,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -23,6 +24,7 @@ function makeRepository(overrides?: Partial<IServiceRepository>): IServiceReposi
     update: vi.fn(),
     softDelete: vi.fn(),
     search: vi.fn().mockResolvedValue([makeService(1, 'Nail Trim')]),
+    unlinkAllByPetId: vi.fn(),
     ...overrides,
   };
 }

@@ -10,6 +10,7 @@ const mockService: Service = {
   description: 'Complete grooming',
   durationMinutes: 60,
   price: 5000,
+  petId: null,
   status: SERVICE_STATUS.ACTIVE,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -24,6 +25,7 @@ function makeRepository(overrides?: Partial<IServiceRepository>): IServiceReposi
     update: vi.fn().mockResolvedValue({ ...mockService, name: 'Updated', price: 7500 }),
     softDelete: vi.fn(),
     search: vi.fn(),
+    unlinkAllByPetId: vi.fn(),
     ...overrides,
   };
 }
@@ -106,5 +108,27 @@ describe('UpdateServiceUseCase', () => {
 
     expect(result.status).toBe(SERVICE_STATUS.INACTIVE);
     expect(repo.update).toHaveBeenCalledWith(1, { name: 'Updated', status: SERVICE_STATUS.INACTIVE });
+  });
+
+  it('passes petId through to repository.update when linking', async () => {
+    const input = { petId: 5 };
+
+    await useCase.execute(1, input);
+
+    expect(repository.update).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ petId: 5 }),
+    );
+  });
+
+  it('passes petId: null through to repository.update when unlinking', async () => {
+    const input = { petId: null };
+
+    await useCase.execute(1, input);
+
+    expect(repository.update).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ petId: null }),
+    );
   });
 });
