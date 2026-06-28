@@ -57,9 +57,9 @@ Chain strategy: pending
 
 ## PR 6: Cascade + Wiring
 
-- [ ] T-18 RED+GREEN Modify DeactivateClient — add IPetRepository, cascade deactivate pets.
-- [ ] T-19 RED+GREEN Modify SoftDeleteClient — add IPetRepository, cascade soft-delete pets.
-- [ ] T-20 Wire api/index.ts — mount /api/v1/pets, pass petRepository to cascade use cases.
+- [x] T-18 RED+GREEN Modify DeactivateClient — add IPetRepository, cascade deactivate pets.
+- [x] T-19 RED+GREEN Modify SoftDeleteClient — add IPetRepository, cascade soft-delete pets.
+- [x] T-20 Wire api/index.ts — mount /api/v1/pets, pass petRepository to cascade use cases.
 
 ## PR 7: Frontend Types + Services
 
