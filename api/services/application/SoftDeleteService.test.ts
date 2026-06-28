@@ -10,6 +10,7 @@ const activeService: Service = {
   description: null,
   durationMinutes: 60,
   price: 5000,
+  petId: null,
   status: SERVICE_STATUS.ACTIVE,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -25,6 +26,7 @@ function makeRepository(overrides?: Partial<IServiceRepository>): IServiceReposi
     update: vi.fn(),
     softDelete: vi.fn().mockResolvedValue(undefined),
     search: vi.fn(),
+    unlinkAllByPetId: vi.fn(),
     ...overrides,
   };
 }

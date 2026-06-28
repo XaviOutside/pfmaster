@@ -36,13 +36,14 @@ export class UpdateServiceUseCase {
       }
     }
 
-    const { name, description, durationMinutes, price, status } = input;
+    const { name, description, durationMinutes, price, petId, status } = input;
     const updateData: UpdateServiceInput = {};
 
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (durationMinutes !== undefined) updateData.durationMinutes = durationMinutes;
     if (price !== undefined) updateData.price = price;
+    if (petId !== undefined) updateData.petId = petId;
     if (status !== undefined) updateData.status = status;
 
     return this.repository.update(id, updateData);

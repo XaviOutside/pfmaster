@@ -17,6 +17,8 @@ export interface Service {
   description: string | null;
   durationMinutes: number | null;
   price: number; // stored as integer cents (e.g. 2500 = $25.00)
+  /** ref: pets.id — application-layer integrity, no FK constraint */
+  petId: number | null;
   status: ServiceStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -28,6 +30,8 @@ export interface CreateServiceInput {
   description?: string | null;
   durationMinutes?: number | null;
   price: number; // integer cents
+  /** Optional pet association — application-layer integrity only */
+  petId?: number | null;
 }
 
 export interface UpdateServiceInput {
@@ -35,6 +39,8 @@ export interface UpdateServiceInput {
   description?: string | null;
   durationMinutes?: number | null;
   price?: number; // integer cents
+  /** Optional pet association — pass null to unlink */
+  petId?: number | null;
   /** Only set by DeactivateService use case — not exposed via UpdateServiceDto */
   status?: ServiceStatus;
 }

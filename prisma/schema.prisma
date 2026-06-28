@@ -50,11 +50,13 @@ model Service {
   description     String?   @db.Text
   durationMinutes Int?      @map("duration_minutes")
   price           Int       // cents (e.g. 2500 = $25.00)
+  petId           Int?      @map("pet_id") // ref: pets.id — no FK constraint (per project rules)
   status          Int       @db.TinyInt @default(1) // 0=inactive, 1=active
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
+  @@index([petId])
   @@fulltext([name, description])
   @@map("services")
 }

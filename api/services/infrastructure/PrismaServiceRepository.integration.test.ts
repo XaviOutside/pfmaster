@@ -19,6 +19,7 @@ interface SeedServiceOptions {
   description?: string | null;
   durationMinutes?: number | null;
   price: number;
+  petId?: number | null;
   status?: number;
   deletedAt?: Date | null;
 }
@@ -30,6 +31,7 @@ async function seedService(opts: SeedServiceOptions): Promise<Service> {
       description: opts.description ?? null,
       durationMinutes: opts.durationMinutes ?? null,
       price: opts.price,
+      petId: opts.petId ?? null,
       status: opts.status ?? SERVICE_STATUS.ACTIVE,
       deletedAt: opts.deletedAt ?? null,
     },
@@ -41,6 +43,7 @@ async function seedService(opts: SeedServiceOptions): Promise<Service> {
     description: row.description,
     durationMinutes: row.durationMinutes,
     price: row.price,
+    petId: row.petId,
     status: row.status as 0 | 1,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -142,7 +145,7 @@ describe('PrismaServiceRepository', () => {
       const deleted = await seedService({ name: 'Deleted', price: 500, deletedAt: new Date() });
       serviceIds.push(s1.id, s2.id, deleted.id);
 
-      const results = await repo.findAll(1, 50);
+      const results = await repo.findAll({ page: 1, limit: 50 });
 
       const ids = results.map((s) => s.id);
       expect(ids).toContain(s1.id);
@@ -155,11 +158,25 @@ describe('PrismaServiceRepository', () => {
       const sb = await seedService({ name: 'Page B', price: 2000 });
       serviceIds.push(sa.id, sb.id);
 
-      const page1 = await repo.findAll(1, 1);
-      const page2 = await repo.findAll(2, 1);
+      const page1 = await repo.findAll({ page: 1, limit: 1 });
+      const page2 = await repo.findAll({ page: 2, limit: 1 });
 
       expect(page1.length).toBeLessThanOrEqual(1);
       expect(page2.length).toBeLessThanOrEqual(1);
+    });
+
+    it('filters by petId when provided', async () => {
+      const linked = await seedService({ name: 'Linked', price: 1000, petId: 5 });
+      const unlinked = await seedService({ name: 'Unlinked', price: 2000, petId: null });
+      const other = await seedService({ name: 'Other Pet', price: 3000, petId: 7 });
+      serviceIds.push(linked.id, unlinked.id, other.id);
+
+      const results = await repo.findAll({ page: 1, limit: 50, petId: 5 });
+
+      const ids = results.map((s) => s.id);
+      expect(ids).toContain(linked.id);
+      expect(ids).not.toContain(unlinked.id);
+      expect(ids).not.toContain(other.id);
     });
   });
 
@@ -335,6 +352,59 @@ describe('PrismaServiceRepository', () => {
 
       const ids = results.map((s) => s.id);
       expect(ids).toContain(match.id);
+    });
+  });
+
+  describe('unlinkAllByPetId', () => {
+    it('sets petId to null on all non-deleted services linked to the given pet', async () => {
+      const s1 = await seedService({ name: 'S1', price: 1000, petId: 7 });
+      const s2 = await seedService({ name: 'S2', price: 2000, petId: 7 });
+      const s3 = await seedService({ name: 'S3', price: 3000, petId: 7 });
+      serviceIds.push(s1.id, s2.id, s3.id);
+
+      await repo.unlinkAllByPetId(7);
+
+      const after1 = await repo.findById(s1.id);
+      const after2 = await repo.findById(s2.id);
+      const after3 = await repo.findById(s3.id);
+
+      expect(after1!.petId).toBeNull();
+      expect(after2!.petId).toBeNull();
+      expect(after3!.petId).toBeNull();
+    });
+
+    it('does not affect services linked to a different pet', async () => {
+      const linked7 = await seedService({ name: 'Pet7', price: 1000, petId: 7 });
+      const linked8 = await seedService({ name: 'Pet8', price: 2000, petId: 8 });
+      serviceIds.push(linked7.id, linked8.id);
+
+      await repo.unlinkAllByPetId(7);
+
+      const after7 = await repo.findById(linked7.id);
+      const after8 = await repo.findById(linked8.id);
+
+      expect(after7!.petId).toBeNull();
+      expect(after8!.petId).toBe(8); // unchanged
+    });
+
+    it('does not affect soft-deleted services', async () => {
+      const linked = await seedService({ name: 'Active', price: 1000, petId: 7 });
+      const deleted = await seedService({ name: 'Deleted', price: 2000, petId: 7, deletedAt: new Date() });
+      serviceIds.push(linked.id, deleted.id);
+
+      await repo.unlinkAllByPetId(7);
+
+      const afterLinked = await repo.findById(linked.id);
+      expect(afterLinked!.petId).toBeNull();
+
+      // Soft-deleted service should still have petId (unlinkAllByPetId skips deleted rows)
+      const raw = await prisma.service.findUnique({ where: { id: deleted.id } });
+      expect(raw!.petId).toBe(7);
+    });
+
+    it('is a no-op when pet has no linked services', async () => {
+      // No services seeded with petId=999
+      await expect(repo.unlinkAllByPetId(999)).resolves.toBeUndefined();
     });
   });
 });

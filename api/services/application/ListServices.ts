@@ -1,5 +1,5 @@
 import { Service } from '../domain/Service';
-import { IServiceRepository } from '../domain/IServiceRepository';
+import { IServiceRepository, FindAllParams } from '../domain/IServiceRepository';
 import { ValidationError } from '@api/shared/domain/errors';
 
 const DEFAULT_PAGE = 1;
@@ -9,6 +9,7 @@ const MAX_LIMIT = 100;
 export interface ListServicesParams {
   page?: number;
   limit?: number;
+  petId?: number;
 }
 
 export class ListServicesUseCase {
@@ -28,6 +29,11 @@ export class ListServicesUseCase {
 
     const limit = Math.min(rawLimit, MAX_LIMIT);
 
-    return this.repository.findAll(page, limit);
+    const findAllParams: FindAllParams = { page, limit };
+    if (params.petId !== undefined) {
+      findAllParams.petId = params.petId;
+    }
+
+    return this.repository.findAll(findAllParams);
   }
 }
