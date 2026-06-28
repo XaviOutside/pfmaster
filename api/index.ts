@@ -12,6 +12,16 @@ import { SoftDeleteClientUseCase } from './clients/application/SoftDeleteClient'
 import { SearchClientsUseCase } from './clients/application/SearchClients';
 import { ClientController } from './clients/interface/ClientController';
 import { createClientRouter } from './clients/interface/clientRouter';
+import { PrismaPetRepository } from './pets/infrastructure/PrismaPetRepository';
+import { CreatePetUseCase } from './pets/application/CreatePet';
+import { GetPetUseCase } from './pets/application/GetPet';
+import { ListPetsUseCase } from './pets/application/ListPets';
+import { UpdatePetUseCase } from './pets/application/UpdatePet';
+import { DeactivatePetUseCase } from './pets/application/DeactivatePet';
+import { SoftDeletePetUseCase } from './pets/application/SoftDeletePet';
+import { SearchPetsUseCase } from './pets/application/SearchPets';
+import { PetController } from './pets/interface/PetController';
+import { createPetRouter } from './pets/interface/petRouter';
 
 // Validate required environment variables at startup (skip in test environment)
 if (process.env['NODE_ENV'] !== 'test' && !process.env['DATABASE_URL']) {
@@ -35,18 +45,33 @@ app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Clients bounded context — wire dependencies
+// Repositories — shared across bounded contexts for cascade operations
 const clientRepository = new PrismaClientRepository();
+const petRepository = new PrismaPetRepository();
+
+// Clients bounded context — wire dependencies
 const clientController = new ClientController(
   new CreateClientUseCase(clientRepository),
   new GetClientUseCase(clientRepository),
   new ListClientsUseCase(clientRepository),
   new UpdateClientUseCase(clientRepository),
-  new DeactivateClientUseCase(clientRepository),
-  new SoftDeleteClientUseCase(clientRepository),
+  new DeactivateClientUseCase(clientRepository, petRepository),
+  new SoftDeleteClientUseCase(clientRepository, petRepository),
   new SearchClientsUseCase(clientRepository),
 );
 app.use('/api/v1/clients', createClientRouter(clientController));
+
+// Pets bounded context — wire dependencies
+const petController = new PetController(
+  new CreatePetUseCase(petRepository),
+  new GetPetUseCase(petRepository),
+  new ListPetsUseCase(petRepository),
+  new UpdatePetUseCase(petRepository),
+  new DeactivatePetUseCase(petRepository),
+  new SoftDeletePetUseCase(petRepository),
+  new SearchPetsUseCase(petRepository),
+);
+app.use('/api/v1/pets', createPetRouter(petController));
 
 // 404 handler — must be last route
 app.use((_req: Request, res: Response) => {

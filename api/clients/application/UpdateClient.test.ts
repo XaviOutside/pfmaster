@@ -5,6 +5,7 @@ import { DeactivateClientUseCase } from './DeactivateClient';
 import { IClientRepository } from '../domain/IClientRepository';
 import { Client, CLIENT_STATUS } from '../domain/Client';
 import { ClientNotFoundError, ClientAlreadyDeletedError } from '../domain/ClientErrors';
+import { IPetRepository } from '../../pets/domain/IPetRepository';
 
 const activeClient: Client = {
   id: 1,
@@ -39,6 +40,21 @@ function makeRepository(): IClientRepository {
     update: vi.fn(),
     softDelete: vi.fn(),
     search: vi.fn(),
+  };
+}
+
+function makePetRepository(): IPetRepository {
+  return {
+    create: vi.fn(),
+    findById: vi.fn(),
+    findAll: vi.fn(),
+    findAllByClientId: vi.fn(),
+    update: vi.fn(),
+    softDelete: vi.fn(),
+    search: vi.fn(),
+    clientExistsAndIsActive: vi.fn(),
+    deactivateAllByClientId: vi.fn().mockResolvedValue(undefined),
+    softDeleteAllByClientId: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -94,11 +110,13 @@ describe('UpdateClientUseCase', () => {
 
 describe('SoftDeleteClientUseCase', () => {
   let repository: IClientRepository;
+  let petRepository: IPetRepository;
   let useCase: SoftDeleteClientUseCase;
 
   beforeEach(() => {
     repository = makeRepository();
-    useCase = new SoftDeleteClientUseCase(repository);
+    petRepository = makePetRepository();
+    useCase = new SoftDeleteClientUseCase(repository, petRepository);
   });
 
   it('calls repository.softDelete when client is active', async () => {
@@ -130,11 +148,13 @@ describe('SoftDeleteClientUseCase', () => {
 
 describe('DeactivateClientUseCase', () => {
   let repository: IClientRepository;
+  let petRepository: IPetRepository;
   let useCase: DeactivateClientUseCase;
 
   beforeEach(() => {
     repository = makeRepository();
-    useCase = new DeactivateClientUseCase(repository);
+    petRepository = makePetRepository();
+    useCase = new DeactivateClientUseCase(repository, petRepository);
   });
 
   it('sets status to INACTIVE (0) and calls repository.update', async () => {
