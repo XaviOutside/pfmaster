@@ -15,12 +15,14 @@ interface MutationState {
 }
 
 interface MutationResult<T> {
-  mutate: (...args: unknown[]) => Promise<T | void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mutate: (...args: any[]) => Promise<T | void>;
   isLoading: boolean;
   error: string | null;
 }
 
-function useMutation<TArgs extends unknown[], TResponse>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function useMutation<TArgs extends any[], TResponse>(
   fn: (...args: TArgs) => Promise<TResponse>,
 ): MutationResult<TResponse> & { reset: () => void } {
   const [state, setState] = useState<MutationState>({
