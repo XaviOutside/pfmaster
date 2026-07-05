@@ -35,6 +35,7 @@ The application targets small-to-medium pet grooming businesses and veterinary c
 - **React + TypeScript** with strict mode enabled
 - **Vite** for development server and production builds
 - **Tailwind CSS v4** for utility-first styling — use CSS custom properties (`@theme`) for design tokens, not the `tailwind.config.js` v3 syntax
+- **Design system**: all tokens, components, and visual guidelines are documented in [`DESIGN.md`](./DESIGN.md) — imported from Stitch (Material 3 tonal palette, Montserrat + Inter, card-based layout). Always consult `DESIGN.md` before writing new UI components.
 - Component structure follows **Atomic Design**: atoms → molecules → organisms → pages
 - State management: local component state first; lift only when needed; global store only for auth/session
 

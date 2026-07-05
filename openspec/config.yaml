@@ -1,50 +1,119 @@
 project:
   name: pfmaster
-  description: Proyecto final del master
+  description: Pet grooming and care management web application
   repository: https://github.com/XaviOutside/pfmaster
   created: 2026-06-21
-  last_scanned: 2026-06-22
+  last_scanned: 2026-07-05
 
 stack:
-  language: undefined
-  framework: undefined
-  runtime: undefined
-  status: UNINITIALIZED
+  language: TypeScript 5.6.3
+  runtime: Node.js (tsx dev runtime)
+  framework:
+    frontend: React 19 + Vite 6
+    backend: Express 4.21
+    styling: Tailwind CSS v4
+  orm: Prisma 5.22
+  database: MySQL 8.0 (Docker)
+  logging: Pino 9.5
+  dev_environment: Docker Compose (api, app, db)
   detected_markers:
-    - gitignore_patterns: node, npm, javascript ecosystem
-  notes: |
-    Project is bare (no source code yet). 
-    .gitignore suggests JavaScript/Node.js ecosystem.
-    Awaiting project definition and first commits.
+    - package.json with React 19, Express, Prisma, Vitest, Vite
+    - prisma/schema.prisma (MySQL provider, FULLTEXT indexes)
+    - docker-compose.yml (3 services: api, app, db)
+    - vite.config.ts (React + Tailwind plugins)
+    - Clean Architecture bounded contexts: clients/, pets/, services/
+    - Atomic Design frontend: atoms/, molecules/, organisms/
 
 testing:
-  framework: undefined
-  runner: undefined
-  coverage_tool: undefined
-  strict_tdd: false
-  status: NOT_CONFIGURED
-  notes: |
-    No test runner detected.
-    Will be configured once source code and stack are defined.
+  runner: Vitest 2.1.3
+  coverage_tool: "@vitest/coverage-v8"
+  coverage_threshold: 80% lines (API)
+  strict_tdd: true
+  test_layers:
+    - layer: API unit
+      config: vitest.config.ts
+      command: npm test
+      count: 30
+      environment: node
+    - layer: API integration
+      config: vitest.integration.config.ts
+      command: npm run test:integration
+      count: 3
+      environment: node (forks, singleFork, 30s timeout)
+      requires: Docker MySQL
+    - layer: Frontend
+      config: vitest.frontend.config.ts
+      command: npm run test:frontend
+      count: 27
+      environment: jsdom
+    - layer: E2E
+      framework: Playwright (mandated by AGENTS.md)
+      status: NOT_CONFIGURED
+      command: none
 
 conventions:
-  code_style: undefined
-  linter: undefined
-  formatter: undefined
+  code_style:
+    typescript_strict: true
+    functional_components: true
+    enum_tinyint_mapping: true
+    no_foreign_keys: true
+    no_any_type: true
+  naming:
+    components: PascalCase
+    utilities_hooks: camelCase
+    db_columns: snake_case
+    api_fields: camelCase
+  linter: NOT_CONFIGURED
+  formatter: NOT_CONFIGURED
+  type_checker: tsc (TypeScript compiler)
   commit_style: conventional
   pr_templates: github_default
   branch_strategy: undefined
+  architecture:
+    backend: Clean Architecture (domain → application → interface → infrastructure)
+    frontend: Atomic Design (atoms → molecules → organisms → pages)
+    bounded_contexts:
+      - clients
+      - pets
+      - services
+    shared_modules:
+      - shared/domain (BaseEntity, errors)
+      - shared/infrastructure (Prisma client)
+      - shared/utils (FTS sanitization)
+      - observability (Pino logger)
+    fts_search: MySQL FULLTEXT with MATCH AGAINST IN BOOLEAN MODE
+    prices: integer cents
 
 artifacts:
   proposal_dir: openspec/changes
   spec_dir: openspec/changes
   design_dir: openspec/changes
   task_dir: openspec/changes
+  archive_dir: openspec/changes/archive
 
 persistence:
   mode: hybrid
   engram_enabled: true
   openspec_enabled: true
+  engram_topic_key: sdd-init/pfmaster
   sync_interval: session_close
 
-strict_tdd_mode: false
+strict_tdd_mode: true
+
+completed_sdd_cycles:
+  - id: "2026-06-24-clients-frontend"
+    title: Client Management Frontend
+    status: archived
+  - id: "2026-06-28-create-the-model-pet-in-a-new-api"
+    title: Pet Model in New API
+    status: archived
+  - id: "2026-06-28-services-api"
+    title: Services API
+    status: archived
+  - id: "2026-06-28-link-pet-services"
+    title: Link Pet Services
+    status: archived
+
+active_sdd_changes:
+  - id: petmanager
+    phase: explore
