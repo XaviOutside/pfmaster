@@ -1,1 +1,184 @@
 @import "tailwindcss";
+
+/* ==========================================================================
+   pfmaster Design System — imported from Stitch ("Dog Grooming Manager")
+   Tailwind CSS v4 @theme — CSS-first configuration
+   ========================================================================== */
+
+@theme {
+  /* ------------------------------------------------------------------
+     Font Families
+     ------------------------------------------------------------------ */
+  --font-headline: "Montserrat", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  /* Defaults apply project-wide */
+  --default-font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --default-mono-font-family: "JetBrains Mono", ui-monospace, monospace;
+
+  /* ------------------------------------------------------------------
+     Typography Scale
+     Each --text-* token maps to a `text-{name}` utility.
+     Sub-properties control line-height, font-weight, and letter-spacing.
+     ------------------------------------------------------------------ */
+
+  /* Display */
+  --text-display-lg: 3rem;                     /* 48px */
+  --text-display-lg--line-height: 3.5rem;      /* 56px */
+  --text-display-lg--font-weight: 700;
+  --text-display-lg--letter-spacing: -0.02em;
+
+  /* Headlines */
+  --text-headline-lg: 2rem;                    /* 32px */
+  --text-headline-lg--line-height: 2.5rem;     /* 40px */
+  --text-headline-lg--font-weight: 600;
+
+  --text-headline-md: 1.5rem;                  /* 24px */
+  --text-headline-md--line-height: 2rem;       /* 32px */
+  --text-headline-md--font-weight: 600;
+
+  /* Body */
+  --text-body-lg: 1.125rem;                    /* 18px */
+  --text-body-lg--line-height: 1.75rem;        /* 28px */
+  --text-body-lg--font-weight: 400;
+
+  --text-body-md: 1rem;                        /* 16px */
+  --text-body-md--line-height: 1.5rem;         /* 24px */
+  --text-body-md--font-weight: 400;
+
+  /* Label */
+  --text-label-md: 0.875rem;                   /* 14px */
+  --text-label-md--line-height: 1.25rem;       /* 20px */
+  --text-label-md--font-weight: 500;
+  --text-label-md--letter-spacing: 0.05em;
+
+  /* Caption */
+  --text-caption: 0.75rem;                     /* 12px */
+  --text-caption--line-height: 1rem;           /* 16px */
+  --text-caption--font-weight: 400;
+
+  /* ------------------------------------------------------------------
+     Color System (Material 3 tonal palette from Stitch)
+     Usage: bg-primary, text-on-primary, border-outline, etc.
+     ------------------------------------------------------------------ */
+
+  /* ── Surface / Background hierarchy ── */
+  --color-background: #fdfae7;
+  --color-surface: #fdfae7;
+  --color-surface-dim: #dddbc8;
+  --color-surface-bright: #fdfae7;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f7f4e1;
+  --color-surface-container: #f1eedb;
+  --color-surface-container-high: #ece9d6;
+  --color-surface-container-highest: #e6e3d0;
+  --color-on-surface: #1c1c11;
+  --color-on-surface-variant: #3d4947;
+  --color-inverse-surface: #313124;
+  --color-inverse-on-surface: #f4f1de;
+  --color-outline: #6d7a77;
+  --color-outline-variant: #bcc9c6;
+  --color-surface-tint: #006a60;
+
+  /* ── Primary (Soft Teal — brand actions, main presence) ── */
+  --color-primary: #2a9d8f;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #008376;
+  --color-on-primary-container: #f4fffb;
+  --color-inverse-primary: #6fd8c8;
+  --color-primary-fixed: #8cf5e4;
+  --color-primary-fixed-dim: #6fd8c8;
+  --color-on-primary-fixed: #00201c;
+  --color-on-primary-fixed-variant: #005048;
+
+  /* ── Secondary (Warm Beige/Gold — accents, highlights) ── */
+  --color-secondary: #e9c46a;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #ffd87c;
+  --color-on-secondary-container: #795d08;
+  --color-secondary-fixed: #ffdf96;
+  --color-secondary-fixed-dim: #e7c268;
+  --color-on-secondary-fixed: #251a00;
+  --color-on-secondary-fixed-variant: #5a4400;
+
+  /* ── Tertiary (Friendly Blue — info, links, status) ── */
+  --color-tertiary: #457b9d;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #447a9c;
+  --color-on-tertiary-container: #fcfcff;
+  --color-tertiary-fixed: #c7e7ff;
+  --color-tertiary-fixed-dim: #98cdf2;
+  --color-on-tertiary-fixed: #001e2e;
+  --color-on-tertiary-fixed-variant: #064c6b;
+
+  /* ── Error ── */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* ── Semantic aliases (shorter names for common patterns) ── */
+  --color-brand: #2a9d8f;              /* alias for primary */
+  --color-brand-accent: #e9c46a;        /* alias for secondary */
+  --color-info: #457b9d;                /* alias for tertiary */
+  --color-success: #2a9d8f;             /* reuse primary for success */
+  --color-warning: #e9c46a;             /* reuse secondary for warning */
+  --color-danger: #ba1a1a;              /* alias for error */
+
+  /* ------------------------------------------------------------------
+     Border Radius
+     ------------------------------------------------------------------ */
+  --radius-sm: 0.25rem;    /*  4px — tight corners */
+  --radius-md: 0.5rem;     /*  8px — buttons, inputs, standard elements */
+  --radius-lg: 0.75rem;    /* 12px — intermediate */
+  --radius-xl: 1rem;       /* 16px — cards, modals, large containers */
+  --radius-2xl: 1.5rem;    /* 24px — hero/feature containers */
+
+  /* ------------------------------------------------------------------
+     Spacing (8px base unit)
+     ------------------------------------------------------------------ */
+  --spacing-unit: 0.5rem;           /* 8px */
+  --spacing-gutter: 1.5rem;         /* 24px */
+  --spacing-card-padding: 1.5rem;   /* 24px */
+  --spacing-margin-desktop: 2.5rem; /* 40px */
+  --spacing-margin-mobile: 1rem;    /* 16px */
+
+  /* ------------------------------------------------------------------
+     Shadows (elevation)
+     ------------------------------------------------------------------ */
+
+  /* Level 1 — Cards, surface containers */
+  --shadow-card: 0 4px 12px rgba(42, 157, 143, 0.04);
+
+  /* Level 2 — Modals, popovers, dialogs */
+  --shadow-modal: 0 8px 24px rgba(42, 157, 143, 0.08);
+
+  /* ------------------------------------------------------------------
+     Container
+     ------------------------------------------------------------------ */
+  --container-max: 1280px;
+
+  /* ------------------------------------------------------------------
+     Easing
+     ------------------------------------------------------------------ */
+  --ease-fluid: cubic-bezier(0.3, 0, 0, 1);
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ==========================================================================
+   Base layer — global resets and defaults
+   ========================================================================== */
+
+@layer base {
+  html {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    background-color: #fdfae7;
+    color: #1c1c11;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Montserrat", sans-serif;
+  }
+}
