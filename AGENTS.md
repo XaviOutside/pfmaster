@@ -330,6 +330,85 @@ All code — production and test — must be reviewed for the following smells b
 - **Inappropriate Intimacy** — modules that know too much about each other's internals; enforce boundaries through interfaces
 - **God Object** — a single module that knows or does everything; split by domain responsibility
 
+---
+
+## SDLC Security Gates (MANDATORY)
+
+Every commit and PR MUST pass these gates before merge. No exceptions — a failing gate is a hard blocker.
+
+### Pre-Commit Gate
+
+Run before every `git commit`. If any check fails, fix before committing.
+
+```bash
+npm run lint        # ESLint + SonarQube (0 errors required)
+npm run build       # TypeScript compilation (0 errors required)
+npm test            # All tests must pass
+```
+
+### Pre-Push / Pre-PR Gate
+
+Run before every `git push` or PR creation.
+
+```bash
+npm run lint        # 0 errors, 0 warnings
+npm run build       # Clean build
+npm test            # All tests pass
+```
+
+### Pre-Merge Security Scan
+
+Run before merging to `main`. Requires Snyk authentication (`snyk auth`).
+
+```bash
+snyk test           # Dependency vulnerabilities — 0 unaddressed critical/high
+snyk code test      # SAST static analysis — 0 findings
+npm audit           # Review findings, document exceptions
+```
+
+### Gate Summary
+
+| Gate | When | Checks | Blocker |
+|---|---|---|---|
+| **Lint** | Pre-commit | `npm run lint` | Any error |
+| **Build** | Pre-commit | `npm run build` | Compilation error |
+| **Tests** | Pre-commit | `npm test` | Any failure |
+| **Deps** | Pre-merge | `snyk test` | Unaddressed critical/high |
+| **SAST** | Pre-merge | `snyk code test` | Any finding |
+| **OWASP** | Per-feature | Manual review | Any violation |
+
+### Snyk (MANDATORY)
+
+Snyk is integrated into the SDLC for both dependency and static code analysis:
+
+- **Dependency scanning**: `snyk test` — catches known CVEs in npm packages. Any **critical** or **high** severity finding is a merge blocker unless documented in `.snyk` policy file with expiration date.
+- **SAST (Static Code Analysis)**: `snyk code test` — detects security vulnerabilities in source code (injection, XSS, hardcoded secrets, path traversal, etc.). Zero findings required for merge.
+- **Policy file**: `.snyk` at repo root documents accepted exceptions with reasons and expiration dates. Expired exceptions must be re-evaluated.
+- **CI integration**: Snyk scans are part of the pre-merge gate. Run locally before pushing to avoid CI failures.
+
+Both Snyk and SonarQube complement each other: SonarQube owns code quality and security hotspots; Snyk owns supply-chain and container risk.
+
+### Input Sanitization (MANDATORY)
+
+All user input must be sanitized before reaching the database or FTS engine:
+
+- **FTS queries**: MUST pass through `sanitizeFtsQuery()` in `api/shared/utils/sanitizeFtsQuery.ts` before `AGAINST()`. The function strips all 6 FTS operators (`+`, `-`, `*`, `"`, `(`, `)`) to prevent FTS operator injection.
+- **API input**: All string fields validated for length limits (see domain constants like `MAX_NAME_LENGTH`, `MAX_SPECIES_LENGTH`).
+- **SQL queries**: All DB access goes through Prisma's parameterized queries (`$queryRaw` with tagged templates). Never concatenate user input into SQL strings.
+- **No raw SQL in route handlers**: DB interactions go through the repository layer only.
+
+### Security Middleware (Active)
+
+The API server has the following security middleware active in `api/index.ts`:
+
+| Middleware | Protection |
+|---|---|
+| `helmet()` | CSP, X-Frame-Options, X-Content-Type-Options, HSTS, etc. |
+| `cors()` | Configurable origin whitelist (`CORS_ORIGIN` env var) |
+| `express-rate-limit` | 100 requests / 15 minutes per IP on `/api/` routes |
+| `app.disable('x-powered-by')` | Hides Express version from response headers |
+| Global error handler | Returns generic `Internal server error` on 500 — never leaks stack traces or internal messages |
+
 ## Out of Scope (v1)
 
 - Authentication / multi-user roles (single-user app for now)
