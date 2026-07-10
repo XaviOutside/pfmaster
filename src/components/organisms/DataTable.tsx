@@ -182,7 +182,7 @@ export default function DataTable<T>({
               return (
                 <div
                   key={`cell-${rowKey(row)}-${idx}`}
-                  className={`${isFirst ? 'flex items-center gap-3' : ''} ${!col.mobileVisible && col.mobileVisible !== undefined ? 'hidden sm:flex sm:flex-col sm:gap-1' : 'flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-0'} ${spanClass} ${alignClass}`}
+                  className={`${isFirst ? 'flex items-center gap-4' : ''} ${!col.mobileVisible && col.mobileVisible !== undefined ? 'hidden sm:flex sm:flex-col sm:gap-1' : 'flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-0'} ${spanClass} ${alignClass}`}
                   data-testid={`cell-${col.header.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   {isFirst && avatarName && (

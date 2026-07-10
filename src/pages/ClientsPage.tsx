@@ -7,6 +7,7 @@ import PageHeader from '@/components/organisms/PageHeader';
 import ModuleTabs from '@/components/molecules/ModuleTabs';
 import StatusBadge from '@/components/molecules/StatusBadge';
 import Button from '@/components/atoms/Button';
+import { formatServiceDate } from '@/utils/format';
 import type { ColumnConfig, RowAction } from '@/components/organisms/DataTable';
 
 const MODULE_TABS = [
@@ -44,8 +45,14 @@ export default function ClientsPage() {
   const columns: ColumnConfig<Client>[] = [
     {
       header: 'Cliente',
-      render: (c) => c.name,
-      span: 'sm:col-span-4',
+      render: (c) => (
+        <>
+          <span className="font-semibold">{c.name}</span>
+          <br />
+          <span className="text-sm text-on-surface-variant">#{c.id}</span>
+        </>
+      ),
+      span: 'sm:col-span-3',
     },
     {
       header: 'Contacto',
@@ -59,15 +66,32 @@ export default function ClientsPage() {
             <span className="material-symbols-outlined text-[16px]" aria-hidden="true">phone</span>
             {c.phone}
           </span>
+          {c.phone2 && (
+            <span className="flex items-center gap-2 text-on-surface-variant">
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">phone</span>
+              {c.phone2}
+            </span>
+          )}
+          {c.address && (
+            <span className="flex items-center gap-2 text-on-surface-variant">
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">location_on</span>
+              {c.address}
+            </span>
+          )}
         </div>
       ),
-      span: 'sm:col-span-4',
+      span: 'sm:col-span-3',
     },
     {
       header: 'Estado',
       render: (c) => <StatusBadge status={c.status} />,
       span: 'sm:col-span-2',
       mobileVisible: false,
+    },
+    {
+      header: 'Último servicio',
+      render: (c) => formatServiceDate(c.lastServiceDate),
+      span: 'sm:col-span-3',
     },
   ];
 
