@@ -1,5 +1,3 @@
-import { type ReactNode } from 'react';
-
 export interface ModuleTab {
   /** Unique identifier for the tab */
   id: string;

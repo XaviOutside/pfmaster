@@ -21,7 +21,7 @@ const columns: ColumnConfig<TestItem>[] = [
   },
 ];
 
-const rowActions: RowAction<TestItem>[] = [
+const _rowActions: RowAction<TestItem>[] = [
   {
     key: 'edit',
     label: 'Edit',
