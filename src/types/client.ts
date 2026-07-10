@@ -18,6 +18,7 @@ export interface Client {
   phone2: string | null;
   address: string | null;
   status: ClientStatus;
+  lastServiceDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
