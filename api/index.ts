@@ -1,4 +1,8 @@
 import 'dotenv/config';
+import { initSentry } from './observability/sentry';
+initSentry();
+
+import { setupExpressErrorHandler } from '@sentry/node';
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
@@ -126,6 +130,9 @@ app.use('/api/v1/services', createServiceRouter(serviceController));
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'Not found' });
 });
+
+// Sentry error handler — must be before the generic error handler
+setupExpressErrorHandler(app);
 
 // Global error handler — never leak internal details on 500
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

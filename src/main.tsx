@@ -1,3 +1,4 @@
+import '@/lib/sentry'; // Must be first import — Sentry init
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
