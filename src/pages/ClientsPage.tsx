@@ -50,6 +50,8 @@ export default function ClientsPage() {
           <span className="font-semibold">{c.name}</span>
           <br />
           <span className="text-sm text-on-surface-variant">#{c.id}</span>
+          <br />
+          <span className="text-sm text-on-surface-variant">{formatServiceDate(c.lastServiceDate)}</span>
         </>
       ),
       span: 'sm:col-span-3',
@@ -80,18 +82,21 @@ export default function ClientsPage() {
           )}
         </div>
       ),
-      span: 'sm:col-span-3',
+      span: 'sm:col-span-4',
+    },
+    {
+      header: 'Notas',
+      render: (c) => (
+        <span className="line-clamp-2 text-sm text-on-surface-variant" title={c.notes ?? undefined}>{c.notes || '—'}</span>
+      ),
+      span: 'sm:col-span-2',
+      mobileVisible: false,
     },
     {
       header: 'Estado',
       render: (c) => <StatusBadge status={c.status} />,
       span: 'sm:col-span-2',
       mobileVisible: false,
-    },
-    {
-      header: 'Último servicio',
-      render: (c) => formatServiceDate(c.lastServiceDate),
-      span: 'sm:col-span-3',
     },
   ];
 
