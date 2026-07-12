@@ -103,7 +103,7 @@ export default function PetsPage() {
     {
       key: 'deactivate',
       label: 'Desactivar',
-      icon: 'block',
+      icon: 'delete',
       destructive: true,
       onAction: (p) => setConfirmTarget(p),
     },

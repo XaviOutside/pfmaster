@@ -244,7 +244,7 @@ export default function DataTable<T>({
             {/* Actions cell */}
             {hasActions && (
               <div
-                className={`flex flex-wrap sm:justify-end gap-2 mt-2 sm:mt-0 ${actionSpan}`}
+                className={`flex flex-wrap items-center sm:justify-end gap-2 mt-2 sm:mt-0 ${actionSpan}`}
                 data-testid="datatable-actions-cell"
               >
                 {/* CrossRefActions — labeled bordered buttons */}
@@ -258,7 +258,7 @@ export default function DataTable<T>({
                       disabled={isDisabled}
                       title={action.label}
                       aria-label={action.label}
-                      className="px-3 py-1.5 text-xs font-label-sm bg-surface-container hover:bg-surface-container-high text-on-surface rounded-md transition-colors flex items-center gap-1 border border-outline-variant/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 text-xs font-label-sm bg-surface-container hover:bg-surface-container-high text-on-surface rounded-md transition-colors flex items-center gap-1 border border-outline-variant/30 disabled:opacity-40 disabled:cursor-not-allowed min-h-[30px]"
                       data-testid={`crossref-action-${action.key}`}
                     >
                       <span className="material-symbols-outlined text-[14px]">
@@ -270,25 +270,29 @@ export default function DataTable<T>({
                 })}
 
                 {/* RowActions — icon-only buttons */}
-                {rowActions && rowActions.length > 0 && rowActions.map((action) => (
-                  <button
-                    key={`action-${rowKey(row)}-${action.key}`}
-                    type="button"
-                    onClick={() => action.onAction(row)}
-                    title={action.label}
-                    aria-label={action.label}
-                    className={`p-1.5 rounded-md transition-colors ${
-                      action.destructive
-                        ? 'text-status-error hover:bg-error-container hover:text-on-error-container'
-                        : 'text-secondary hover:bg-secondary-container'
-                    }`}
-                    data-testid={`row-action-${action.key}`}
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      {action.icon}
-                    </span>
-                  </button>
-                ))}
+                {rowActions && rowActions.length > 0 && (
+                  <div className="flex gap-1 ml-auto sm:ml-2">
+                    {rowActions.map((action) => (
+                      <button
+                        key={`action-${rowKey(row)}-${action.key}`}
+                        type="button"
+                        onClick={() => action.onAction(row)}
+                        title={action.label}
+                        aria-label={action.label}
+                        className={`p-1.5 rounded-md transition-colors ${
+                          action.destructive
+                            ? 'text-status-error hover:bg-error-container hover:text-on-error-container'
+                            : 'text-secondary hover:bg-secondary-container'
+                        }`}
+                        data-testid={`row-action-${action.key}`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          {action.icon}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

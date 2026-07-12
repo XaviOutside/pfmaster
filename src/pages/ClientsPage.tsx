@@ -96,7 +96,7 @@ export default function ClientsPage() {
           )}
         </div>
       ),
-      span: 'sm:col-span-4',
+      span: 'sm:col-span-3',
     },
     {
       header: 'Notas',
@@ -215,7 +215,7 @@ export default function ClientsPage() {
         avatarName={(c) => c.name}
         rowActions={rowActions}
         crossRefActions={crossRefActions}
-        actionSpan="sm:col-span-3"
+        actionSpan="sm:col-span-4"
         loading={isLoading}
         error={error}
         onRetry={fetchClients}
