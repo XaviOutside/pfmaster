@@ -177,6 +177,22 @@ Rules:
 - Use absolute imports via Vite path aliases: `@/components/...`, `@/hooks/...`, `@/types/...`
 - Group imports: external libs → internal aliases → relative — separated by blank lines
 
+### DRY & Technical Debt (MANDATORY)
+
+**DRY (Don't Repeat Yourself)** is a first-class architectural principle, not a style preference:
+
+- **Extract, don't duplicate**: the same logic in two places is a maintenance bomb. When you find yourself copying code, stop and extract a shared utility, hook, component, or helper.
+- **Single source of truth**: every business rule, constant, type definition, and validation rule must live in exactly one place. Changes propagate automatically — no hunting down copies.
+- **Pattern over ad-hoc**: when a pattern exists (e.g. `Pet.notes` for entity fields), follow it EXACTLY. Do not invent a new way to do the same thing — divergence IS technical debt.
+- **Reuse existing infrastructure**: before creating a new hook, utility, or component, check if one already exists that can be extended. Dead parallel implementations rot silently.
+
+**Technical debt is never free** — it compounds with interest:
+
+- Every shortcut taken today costs 3x to fix later. Only take a shortcut when the alternative is demonstrably worse, and document it with a `// TODO(#issue): …` comment linked to a GitHub issue.
+- **Boy Scout Rule**: leave every file you touch cleaner than you found it. If you see dead code, a magic number, or a missing test while working on something else — fix it in the same PR (small scope) or open an issue (large scope).
+- **Track, don't ignore**: pre-existing lint errors, build warnings, or failing tests are debt. Do not silently accept them — either fix them or document them with an issue.
+- **Avoid speculative generality**: do not build abstractions "just in case." Abstract only when you have at least two concrete use cases that share the same pattern. Premature abstraction is technical debt, not architecture.
+
 ---
 
 ## MySQL Full-Text Search Guidelines
