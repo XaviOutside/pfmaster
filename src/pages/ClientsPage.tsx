@@ -54,7 +54,7 @@ export default function ClientsPage() {
           <span className="text-sm text-on-surface-variant">{formatServiceDate(c.lastServiceDate)}</span>
         </>
       ),
-      span: 'sm:col-span-3',
+      span: 'sm:col-span-4',
     },
     {
       header: 'Contacto',
@@ -82,19 +82,13 @@ export default function ClientsPage() {
           )}
         </div>
       ),
-      span: 'sm:col-span-4',
+      span: 'sm:col-span-5',
     },
     {
       header: 'Notas',
       render: (c) => (
         <span className="line-clamp-2 text-sm text-on-surface-variant" title={c.notes ?? undefined}>{c.notes || '—'}</span>
       ),
-      span: 'sm:col-span-2',
-      mobileVisible: false,
-    },
-    {
-      header: 'Estado',
-      render: (c) => <StatusBadge status={c.status} />,
       span: 'sm:col-span-2',
       mobileVisible: false,
     },
