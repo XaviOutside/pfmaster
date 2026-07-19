@@ -10,12 +10,12 @@ export class SearchServicesUseCase {
   constructor(private readonly repository: IServiceRepository) {}
 
   async execute(params: SearchServicesParams): Promise<Service[]> {
-    const sanitized = sanitizeFtsQuery(params.query);
+    const { query, isEmpty } = sanitizeFtsQuery(params.query);
 
-    if (!sanitized) {
+    if (isEmpty) {
       return [];
     }
 
-    return this.repository.search(sanitized);
+    return this.repository.search(query);
   }
 }

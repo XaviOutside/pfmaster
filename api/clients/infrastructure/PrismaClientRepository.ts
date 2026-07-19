@@ -104,43 +104,73 @@ export class PrismaClientRepository implements IClientRepository {
   }
 
   async search(sanitizedQuery: string): Promise<Client[]> {
-    // $queryRaw with tagged template ensures parameterized binding — no string interpolation
-    const rows = await prisma.$queryRaw<Array<{
-      id: number;
-      name: string;
-      email: string;
-      phone: string;
-      phone2: string | null;
-      address: string | null;
-      status: number;
-      last_service_date: Date | null;
-      notes: string | null;
-      created_at: Date;
-      updated_at: Date;
-      deleted_at: Date | null;
-    }>>`
-      SELECT id, name, email, phone, phone2, address, status,
-             last_service_date, notes, created_at, updated_at, deleted_at
-      FROM clients
-      WHERE MATCH(name, email) AGAINST(${sanitizedQuery} IN BOOLEAN MODE)
+    // Query 1: search clients by own fields (6 cols) via ngram NATURAL LANGUAGE MODE
+    const clientRows = await prisma.$queryRaw<Array<{ id: number }>>`
+      SELECT id FROM clients
+      WHERE MATCH(name, email, phone, phone2, address, notes)
+            AGAINST(${sanitizedQuery} IN NATURAL LANGUAGE MODE)
         AND deleted_at IS NULL
       LIMIT 50
     `;
 
-    return rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      phone: row.phone,
-      phone2: row.phone2,
-      address: row.address,
-      status: row.status as 0 | 1,
-      lastServiceDate: row.last_service_date,
-      notes: row.notes,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      deletedAt: row.deleted_at,
-    }));
+    // Query 2: search pets by name, breed, notes and get DISTINCT client IDs
+    const petRows = await prisma.$queryRaw<Array<{ client_id: number }>>`
+      SELECT DISTINCT client_id FROM pets
+      WHERE MATCH(name, breed, notes)
+            AGAINST(${sanitizedQuery} IN NATURAL LANGUAGE MODE)
+        AND deleted_at IS NULL
+      LIMIT 50
+    `;
+
+    // Merge and deduplicate
+    const ids = [
+      ...new Set([
+        ...clientRows.map((r) => r.id),
+        ...petRows.map((r) => r.client_id),
+      ]),
+    ];
+
+    if (ids.length === 0) return [];
+
+    // Fetch full client records
+    const rows = await prisma.client.findMany({
+      where: { id: { in: ids }, deletedAt: null },
+      orderBy: { id: 'asc' },
+    });
+
+    // Fetch pet data for matched clients (for substring post-filter)
+    const pets = await prisma.pet.findMany({
+      where: { client_id: { in: ids }, deletedAt: null },
+      select: { client_id: true, name: true, breed: true, notes: true },
+    });
+    const petFieldsByClient = new Map<number, string[]>();
+    for (const p of pets) {
+      const fields = petFieldsByClient.get(p.client_id) ?? [];
+      fields.push(p.name, p.breed, p.notes ?? '');
+      petFieldsByClient.set(p.client_id, fields);
+    }
+
+    // Post-filter: ngram FTS can produce false positives from shared ngrams.
+    // Verify the query actually appears as a substring in at least one searched field.
+    // Strip accents for comparison (MySQL collation handles this, JS does not).
+    const stripAccents = (s: string) =>
+      s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const lowerQuery = stripAccents(sanitizedQuery).toLowerCase();
+    const fieldMatches = (value: string | null) =>
+      value !== null && stripAccents(value).toLowerCase().includes(lowerQuery);
+
+    const matching = rows.filter((row) => {
+      if (fieldMatches(row.name)) return true;
+      if (fieldMatches(row.email)) return true;
+      if (fieldMatches(row.phone)) return true;
+      if (fieldMatches(row.phone2)) return true;
+      if (fieldMatches(row.address)) return true;
+      if (fieldMatches(row.notes)) return true;
+      const fields = petFieldsByClient.get(row.id);
+      return fields?.some((f) => f !== '' && fieldMatches(f)) ?? false;
+    });
+
+    return matching.map((row) => this.mapToClient(row));
   }
 
   /**

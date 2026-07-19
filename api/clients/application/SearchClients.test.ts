@@ -39,45 +39,143 @@ describe('SearchClientsUseCase', () => {
     useCase = new SearchClientsUseCase(repository);
   });
 
-  it('returns paginated results from repository.search()', async () => {
-    vi.mocked(repository.search).mockResolvedValue([matchingClient]);
+  describe('valid query delegation', () => {
+    it('delegates to repository.search() with sanitized query', async () => {
+      vi.mocked(repository.search).mockResolvedValue([matchingClient]);
 
-    const result = await useCase.execute({ query: 'bob' });
+      const result = await useCase.execute({ query: 'bob' });
 
-    expect(result).toEqual([matchingClient]);
-    expect(repository.search).toHaveBeenCalledWith('bob');
+      expect(result).toEqual([matchingClient]);
+      expect(repository.search).toHaveBeenCalledWith('bob');
+    });
+
+    it('strips stopwords before delegating to repository', async () => {
+      vi.mocked(repository.search).mockResolvedValue([]);
+
+      await useCase.execute({ query: 'Calle de la Paz' });
+
+      // "de" and "la" are stopwords — stripped by sanitizeFtsQuery
+      const callArg = vi.mocked(repository.search).mock.calls[0][0];
+      expect(callArg).toBe('calle paz');
+    });
   });
 
-  it('calls sanitizeFtsQuery() before passing term to repository', async () => {
-    vi.mocked(repository.search).mockResolvedValue([]);
+  describe('3-char gate', () => {
+    it('returns empty array and does NOT call repository when query < 3 chars after trim', async () => {
+      const result = await useCase.execute({ query: 'ab' });
 
-    await useCase.execute({ query: '+bob -builder' });
+      expect(result).toEqual([]);
+      expect(repository.search).not.toHaveBeenCalled();
+    });
 
-    // Operators stripped: "+bob -builder" → "bob  builder" → "bob builder"
-    const callArg = vi.mocked(repository.search).mock.calls[0][0];
-    expect(callArg).not.toContain('+');
-    expect(callArg).not.toContain('-');
-    expect(callArg).toBe('bob builder');
+    it('returns empty array for single character query', async () => {
+      const result = await useCase.execute({ query: 'a' });
+
+      expect(result).toEqual([]);
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('returns empty array for empty string', async () => {
+      const result = await useCase.execute({ query: '' });
+
+      expect(result).toEqual([]);
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('returns empty array for whitespace-only query', async () => {
+      const result = await useCase.execute({ query: '   ' });
+
+      expect(result).toEqual([]);
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('trims before checking length — "  ab  " → empty', async () => {
+      const result = await useCase.execute({ query: '  ab  ' });
+
+      expect(result).toEqual([]);
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('allows query ≥ 3 chars after trim and delegates to repository', async () => {
+      vi.mocked(repository.search).mockResolvedValue([matchingClient]);
+
+      const result = await useCase.execute({ query: 'abc' });
+
+      expect(result).toEqual([matchingClient]);
+      expect(repository.search).toHaveBeenCalledWith('abc');
+    });
   });
 
-  it('returns empty array and does NOT call repository when sanitized term is blank', async () => {
-    const result = await useCase.execute({ query: '' });
+  describe('all-stopword → empty', () => {
+    it('returns empty when sanitized query is all stopwords ("de la")', async () => {
+      const result = await useCase.execute({ query: 'de la' });
 
-    expect(result).toEqual([]);
-    expect(repository.search).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('returns empty when sanitized query is all stopwords ("the of in")', async () => {
+      const result = await useCase.execute({ query: 'the of in' });
+
+      expect(result).toEqual([]);
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('returns empty when single stopword is passed ("de")', async () => {
+      const result = await useCase.execute({ query: 'de' });
+
+      expect(result).toEqual([]);
+      expect(repository.search).not.toHaveBeenCalled();
+    });
   });
 
-  it('returns empty array when query is only FTS operators (sanitizes to empty)', async () => {
-    const result = await useCase.execute({ query: '+-*"()' });
+  describe('SANE rejection', () => {
+    it('throws SANE_ERROR when query contains FTS operator "', async () => {
+      await expect(useCase.execute({ query: 'bob"' })).rejects.toThrow('SANE_ERROR');
+      expect(repository.search).not.toHaveBeenCalled();
+    });
 
-    expect(result).toEqual([]);
-    expect(repository.search).not.toHaveBeenCalled();
+    it('throws SANE_ERROR when query contains +', async () => {
+      await expect(useCase.execute({ query: '+bob -builder' })).rejects.toThrow('SANE_ERROR');
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('throws SANE_ERROR when query contains *', async () => {
+      await expect(useCase.execute({ query: 'bob*' })).rejects.toThrow('SANE_ERROR');
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('throws SANE_ERROR when query contains (', async () => {
+      await expect(useCase.execute({ query: 'bob(builder' })).rejects.toThrow('SANE_ERROR');
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('throws SANE_ERROR when query contains )', async () => {
+      await expect(useCase.execute({ query: 'bob)builder' })).rejects.toThrow('SANE_ERROR');
+      expect(repository.search).not.toHaveBeenCalled();
+    });
+
+    it('throws SANE_ERROR when query contains -', async () => {
+      await expect(useCase.execute({ query: 'bob-builder' })).rejects.toThrow('SANE_ERROR');
+      expect(repository.search).not.toHaveBeenCalled();
+    });
   });
 
-  it('returns empty array when query is whitespace only', async () => {
-    const result = await useCase.execute({ query: '   ' });
+  describe('edge cases', () => {
+    it('passes through a valid query with accents to repository', async () => {
+      vi.mocked(repository.search).mockResolvedValue([]);
 
-    expect(result).toEqual([]);
-    expect(repository.search).not.toHaveBeenCalled();
+      await useCase.execute({ query: 'Peña' });
+
+      expect(repository.search).toHaveBeenCalledWith('peña');
+    });
+
+    it('returns empty array from repository when no matches', async () => {
+      vi.mocked(repository.search).mockResolvedValue([]);
+
+      const result = await useCase.execute({ query: 'xyz' });
+
+      expect(result).toEqual([]);
+    });
   });
 });

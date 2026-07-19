@@ -46,16 +46,15 @@ describe('SearchServicesUseCase', () => {
     expect(repository.search).toHaveBeenCalledWith('nail');
   });
 
-  it('sanitizes FTS operators from the query', async () => {
-    await useCase.execute({ query: '+haircut -bath' });
+  it('normalizes query through sanitizeFtsQuery before passing to repository', async () => {
+    await useCase.execute({ query: '  Haircut   Bath  ' });
 
-    // FTS operators (+, -, *, ", (, )) are stripped
+    // Whitespace normalized: "  Haircut   Bath  " → "haircut bath"
     expect(repository.search).toHaveBeenCalledWith('haircut bath');
   });
 
-  it('returns empty array when sanitized query is empty', async () => {
-    // If all characters are FTS operators, the sanitized query is empty
-    const results = await useCase.execute({ query: '+-*"()' });
+  it('returns empty array when query is only stopwords', async () => {
+    const results = await useCase.execute({ query: 'de la' });
 
     expect(results).toEqual([]);
     expect(repository.search).not.toHaveBeenCalled();

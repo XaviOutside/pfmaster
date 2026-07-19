@@ -52,16 +52,14 @@ describe('SearchPetsUseCase', () => {
     expect(repository.search).toHaveBeenCalledWith('shepherd');
   });
 
-  it('calls sanitizeFtsQuery() before passing term to repository', async () => {
+  it('normalizes query through sanitizeFtsQuery before passing to repository', async () => {
     vi.mocked(repository.search).mockResolvedValue([]);
 
-    await useCase.execute({ query: '+shepherd -poodle' });
+    await useCase.execute({ query: '  Shepherd   Dog  ' });
 
-    // Operators stripped: "+shepherd -poodle" → "shepherd  poodle" → "shepherd poodle"
+    // Whitespace normalized: "  Shepherd   Dog  " → "shepherd dog"
     const callArg = vi.mocked(repository.search).mock.calls[0][0];
-    expect(callArg).not.toContain('+');
-    expect(callArg).not.toContain('-');
-    expect(callArg).toBe('shepherd poodle');
+    expect(callArg).toBe('shepherd dog');
   });
 
   it('returns empty array and does NOT call repository when query is empty string', async () => {
@@ -71,8 +69,8 @@ describe('SearchPetsUseCase', () => {
     expect(repository.search).not.toHaveBeenCalled();
   });
 
-  it('returns empty array when query is only FTS operators (sanitizes to empty)', async () => {
-    const result = await useCase.execute({ query: '+-*"()' });
+  it('returns empty array when query is only stopwords', async () => {
+    const result = await useCase.execute({ query: 'de la' });
 
     expect(result).toEqual([]);
     expect(repository.search).not.toHaveBeenCalled();
