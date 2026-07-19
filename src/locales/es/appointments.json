@@ -1,0 +1,66 @@
+{
+  "title": "Citas",
+  "newAppointment": "Nueva Cita",
+  "weekOf": "Semana del",
+  "weekLabel": "{{start}} – {{end}}",
+  "noAppointments": "Sin citas esta semana",
+  "days": {
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mié",
+    "thu": "Jue",
+    "fri": "Vie",
+    "sat": "Sáb",
+    "sun": "Dom"
+  },
+  "months": {
+    "jan": "Enero",
+    "feb": "Febrero",
+    "mar": "Marzo",
+    "apr": "Abril",
+    "may": "Mayo",
+    "jun": "Junio",
+    "jul": "Julio",
+    "aug": "Agosto",
+    "sep": "Septiembre",
+    "oct": "Octubre",
+    "nov": "Noviembre",
+    "dec": "Diciembre"
+  },
+  "status": {
+    "pending": "Pendiente",
+    "confirmed": "Confirmada",
+    "completed": "Completada",
+    "cancelled": "Cancelada"
+  },
+  "form": {
+    "title": "Nueva Cita",
+    "editTitle": "Editar Cita",
+    "selectClient": "Buscar cliente...",
+    "selectPet": "Seleccionar mascota",
+    "date": "Fecha",
+    "time": "Hora",
+    "notes": "Notas",
+    "notesPlaceholder": "Añadir notas (máx. 500 caracteres)",
+    "notesMaxLength": "Las notas no deben superar los 500 caracteres",
+    "save": "Guardar Cita",
+    "cancel": "Cancelar",
+    "noPetsFound": "No se encontraron mascotas para este cliente",
+    "petRequired": "Seleccione una mascota",
+    "clientRequired": "Seleccione un cliente",
+    "dateRequired": "Seleccione una fecha",
+    "timeRequired": "Seleccione una hora"
+  },
+  "nav": {
+    "previous": "Semana anterior",
+    "next": "Semana siguiente",
+    "today": "Hoy"
+  },
+  "errors": {
+    "createFailed": "Error al crear la cita. Inténtelo de nuevo.",
+    "loadFailed": "Error al cargar las citas. Refresque la página.",
+    "doubleBooking": "La mascota ya tiene cita a esta hora.",
+    "petNotFound": "Mascota no encontrada.",
+    "notFound": "Cita no encontrada."
+  }
+}
