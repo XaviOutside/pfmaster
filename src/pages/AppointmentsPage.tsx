@@ -58,8 +58,8 @@ export default function AppointmentsPage() {
 
     try {
       const data = await listAppointments(
-        start.toISOString().slice(0, 10),
-        end.toISOString().slice(0, 10),
+        start.toISOString(),
+        end.toISOString(),
       );
       setAppointments(data);
     } catch {
@@ -89,7 +89,7 @@ export default function AppointmentsPage() {
   const handlePrevWeek = () => goToWeek(-1);
   const handleNextWeek = () => goToWeek(1);
 
-  const handleAppointmentClick = (appointment: Appointment) => {
+  const handleAppointmentClick = (_appointment: Appointment) => {
     // For v1, clicking opens the modal (view-only would be phase 2)
     setIsModalOpen(true);
   };
@@ -98,8 +98,20 @@ export default function AppointmentsPage() {
     fetchAppointments(weekStart);
   };
 
-  // Handle Sidebar "New Appointment" — exposed via a global event or prop
-  // For simplicity, we listen for a custom event dispatched by the sidebar
+  // Handle "New Appointment" from sidebar — check URL param on mount
+  // and listen for event when already on calendar page
+  useEffect(() => {
+    const openModal = searchParams.get('openModal');
+    if (openModal === 'true') {
+      setIsModalOpen(true);
+      // Clean the param without re-triggering navigation
+      const cleaned = new URLSearchParams(searchParams);
+      cleaned.delete('openModal');
+      navigate(`/calendar?${cleaned.toString()}`, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     function handleOpenModal() {
       setIsModalOpen(true);

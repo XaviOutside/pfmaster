@@ -2,6 +2,56 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+}
+
+function generatePhone(seed: number): string {
+  const a = String(Math.floor(seededRandom(seed) * 900) + 100);
+  const b = String(Math.floor(seededRandom(seed + 1) * 900) + 100);
+  return `${a} ${b}`;
+}
+
+function generateAddress(i: number, lastName: string): string {
+  let city: string;
+  if (i % 3 === 0) {
+    city = 'Madrid';
+  } else if (i % 3 === 1) {
+    city = 'Barcelona';
+  } else {
+    city = 'Valencia';
+  }
+  return `Calle ${lastName} ${i + 1}, ${city}`;
+}
+
+function generateNotes(i: number): string | null {
+  if (i % 4 === 0) return null;
+  let msg: string;
+  if (i % 2 === 0) {
+    msg = 'Prefiere citas por la mañana.';
+  } else {
+    msg = 'Suele traer a su mascota cada 4-6 semanas.';
+  }
+  return `Cliente desde ${2021 + (i % 4)}. ${msg}`;
+}
+
+function generatePetNotes(i: number, petName: string): string | null {
+  if (i % 3 === 0) return null;
+  let trait: string;
+  if (i % 2 === 0) {
+    trait = 'Requiere manejo especial.';
+  } else {
+    trait = 'Muy dócil y tranquilo.';
+  }
+  return `Notas de ${petName}: ${trait}`;
+}
+
+function generatePetWeight(i: number): number | null {
+  if (i % 8 === 0) return null;
+  return Number((1 + seededRandom(i * 100 + 200) * 40).toFixed(1));
+}
+
 async function main() {
   console.log('🌱 Seeding pfmaster database…\n');
 
@@ -101,21 +151,18 @@ async function main() {
     const lastName = lastNames[i];
     const hasPhone2 = i % 3 !== 0;
     const hasAddress = i % 2 === 0;
-    const hasNotes = i % 4 !== 0;
 
     extraClients.push(
       prisma.client.create({
         data: {
           name: `${firstName} ${lastName}`,
           email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@email.com`,
-          phone: `+34 6${String(i + 10).padStart(2, '0')} ${String(Math.floor(Math.random() * 900) + 100)} ${String(Math.floor(Math.random() * 900) + 100)}`,
-          phone2: hasPhone2 ? `+34 9${String(i + 20).padStart(2, '0')} ${String(Math.floor(Math.random() * 900) + 100)} ${String(Math.floor(Math.random() * 900) + 100)}` : null,
-          address: hasAddress
-            ? `Calle ${lastName} ${i + 1}, ${i % 3 === 0 ? 'Madrid' : i % 3 === 1 ? 'Barcelona' : 'Valencia'}`
+          phone: `+34 6${String(i + 10).padStart(2, '0')} ${generatePhone(i * 100)}`,
+          phone2: hasPhone2
+            ? `+34 9${String(i + 20).padStart(2, '0')} ${generatePhone(i * 100 + 50)}`
             : null,
-          notes: hasNotes
-            ? `Cliente desde ${2021 + (i % 4)}. ${i % 2 === 0 ? 'Prefiere citas por la mañana.' : 'Suele traer a su mascota cada 4-6 semanas.'}`
-            : null,
+          address: hasAddress ? generateAddress(i, lastName) : null,
+          notes: generateNotes(i),
           lastServiceDate: i % 5 !== 0 ? new Date(2026, 6, i + 1) : null,
           status: i === 19 ? 0 : 1, // last one inactive
         },
@@ -244,8 +291,8 @@ async function main() {
           breed: petBreeds[i % petBreeds.length],
           sex: (i % 3) as 0 | 1 | 2, // 0=unknown, 1=male, 2=female
           dateOfBirth: new Date(2020 + (i % 6), i % 12, (i % 28) + 1),
-          weightKg: i % 8 === 0 ? null : Number((1 + Math.random() * 40).toFixed(1)),
-          notes: i % 3 === 0 ? null : `Notas de ${petNames[i]}: ${i % 2 === 0 ? 'Requiere manejo especial.' : 'Muy dócil y tranquilo.'}`,
+          weightKg: generatePetWeight(i),
+          notes: generatePetNotes(i, petNames[i]),
           status: i === 19 ? 0 : 1,
         },
       })

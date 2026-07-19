@@ -5,25 +5,27 @@ import { useTranslation } from 'react-i18next';
    SVG Icons — equivalents to Material Symbols in the HTML
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const PetsIcon = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
-  const c = size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-9 w-9' : 'h-6 w-6';
-  return <svg className={c} viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 2c-2.5 0-4.5 1.2-5.8 3C8.8 3.2 6.8 2 4 2 2 2 0 4 0 6.5 0 13 6 22 16 30 26 22 32 13 32 6.5 32 4 30 2 28 2c-2.8 0-4.8 1.2-6.2 3C20.5 3.2 18.5 2 16 2z" /></svg>;
-};
+type IconSize = 'sm' | 'md' | 'lg';
 
-const CalendarIcon = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
-  const c = size === 'sm' ? 'h-5 w-5' : size === 'lg' ? 'h-9 w-9' : 'h-6 w-6';
-  return <svg className={c} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
-};
+function sizeClass(size: IconSize, classes: Record<IconSize, string>): string {
+  return classes[size];
+}
 
-const GroupIcon = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
-  const c = size === 'sm' ? 'h-5 w-5' : size === 'lg' ? 'h-9 w-9' : 'h-6 w-6';
-  return <svg className={c} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
-};
+const PetsIcon = ({ size = 'md' }: { size?: IconSize }) => (
+  <svg className={sizeClass(size, { sm: 'h-4 w-4', md: 'h-6 w-6', lg: 'h-9 w-9' })} viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 2c-2.5 0-4.5 1.2-5.8 3C8.8 3.2 6.8 2 4 2 2 2 0 4 0 6.5 0 13 6 22 16 30 26 22 32 13 32 6.5 32 4 30 2 28 2c-2.8 0-4.8 1.2-6.2 3C20.5 3.2 18.5 2 16 2z" /></svg>
+);
 
-const CutIcon = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
-  const c = size === 'sm' ? 'h-5 w-5' : size === 'lg' ? 'h-9 w-9' : 'h-6 w-6';
-  return <svg className={c} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>;
-};
+const CalendarIcon = ({ size = 'md' }: { size?: IconSize }) => (
+  <svg className={sizeClass(size, { sm: 'h-5 w-5', md: 'h-6 w-6', lg: 'h-9 w-9' })} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+);
+
+const GroupIcon = ({ size = 'md' }: { size?: IconSize }) => (
+  <svg className={sizeClass(size, { sm: 'h-5 w-5', md: 'h-6 w-6', lg: 'h-9 w-9' })} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+);
+
+const CutIcon = ({ size = 'md' }: { size?: IconSize }) => (
+  <svg className={sizeClass(size, { sm: 'h-5 w-5', md: 'h-6 w-6', lg: 'h-9 w-9' })} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" /></svg>
+);
 
 const HERO_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCP-2mYS7jEBiaj96KxUzIEoVrDgBH7ztDf1MC8dzTuE96cNVVrENH_iCSrjDJpKi1jGO4opzISofyKXyV7ugm0S7ubPvbRPBx_ZZK_NT1B03uV1UwH56LafVJD9CL4unewK9c0nuSe6B1dQYpsEBy9B5SArfRvP-65qp6hsrk0WSzbKCQ_NlU7msqVJsuKrVeqvPNm8e6jB4cqnSpWaE1dTtc1mnFL3STBfxW7uCCfAa6UtoBT36ame0NharO-z7K24ibIeOPxYu8';
 

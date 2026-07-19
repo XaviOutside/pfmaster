@@ -174,6 +174,32 @@ export default function SettingsPage() {
   }
 
   /* ---- render: form ---- */
+  const renderLogoPreview = () => {
+    if (logoFile) {
+      return (
+        <img
+          src={URL.createObjectURL(logoFile)}
+          alt="Logo preview"
+          className="h-full w-full object-contain"
+        />
+      );
+    }
+    if (logoUrl) {
+      return (
+        <img
+          src={logoUrl}
+          alt="Company logo"
+          className="h-full w-full object-contain"
+        />
+      );
+    }
+    return (
+      <span className="text-on-surface-variant/40 material-symbols-outlined text-2xl">
+        image
+      </span>
+    );
+  };
+
   return (
     <div className="mx-auto max-w-2xl" data-testid="settings-page">
       <h1 className="mb-8 font-headline text-headline-lg text-on-surface">{t('title')}</h1>
@@ -231,23 +257,7 @@ export default function SettingsPage() {
             <div className="flex items-center gap-4">
               {/* Preview */}
               <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-outline-variant bg-surface-container">
-                {logoFile ? (
-                  <img
-                    src={URL.createObjectURL(logoFile)}
-                    alt="Logo preview"
-                    className="h-full w-full object-contain"
-                  />
-                ) : logoUrl ? (
-                  <img
-                    src={logoUrl}
-                    alt="Company logo"
-                    className="h-full w-full object-contain"
-                  />
-                ) : (
-                  <span className="text-on-surface-variant/40 material-symbols-outlined text-2xl">
-                    image
-                  </span>
-                )}
+                {renderLogoPreview()}
               </div>
               <div className="flex flex-col gap-1">
                 <input

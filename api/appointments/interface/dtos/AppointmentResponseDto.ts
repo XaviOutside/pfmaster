@@ -1,4 +1,4 @@
-import { Appointment, AppointmentDetails, APPOINTMENT_STATUS_LABELS } from '../../domain/Appointment';
+import { Appointment, AppointmentDetails } from '../../domain/Appointment';
 
 /**
  * Response DTO for appointment resources.

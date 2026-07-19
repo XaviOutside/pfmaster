@@ -1,4 +1,6 @@
-// @ts-nocheck — Vite handles frontend compilation; tsc is for backend only
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck — frontend-only file; Vite handles import.meta, tsc's module config is for backend
+/* eslint-enable @typescript-eslint/ban-ts-comment */
 /// <reference types="vite/client" />
 import * as Sentry from '@sentry/react';
 import { useEffect } from 'react';

@@ -23,19 +23,6 @@ const domainSettings = {
   updatedAt: new Date('2026-07-19T00:00:00.000Z'),
 };
 
-const expectedDto = {
-  id: 1,
-  companyName: 'Bark & Bubbles',
-  tagline: null,
-  workdays: [1, 2, 3, 4, 5],
-  workStartTime: '09:00',
-  workEndTime: '17:00',
-  defaultLang: 0,
-  logoUrl: null,
-  createdAt: '2026-07-19T00:00:00.000Z',
-  updatedAt: '2026-07-19T00:00:00.000Z',
-};
-
 const validBody = {
   companyName: 'New Name',
   workdays: [1, 2, 3, 4, 5],
@@ -72,7 +59,18 @@ describe('GET /api/v1/settings', () => {
     const res = await request(app).get('/api/v1/settings');
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual(expectedDto);
+    expect(res.body).toMatchObject({
+      id: 1,
+      companyName: 'Bark & Bubbles',
+      tagline: null,
+      workdays: [1, 2, 3, 4, 5],
+      workStartTime: '09:00',
+      workEndTime: '17:00',
+      defaultLang: 0,
+      createdAt: '2026-07-19T00:00:00.000Z',
+      updatedAt: '2026-07-19T00:00:00.000Z',
+      logoUrl: expect.stringMatching(/^\/api\/v1\/settings\/logo\?cb=\d+$/),
+    });
   });
 
   it('returns 404 when settings not found', async () => {

@@ -15,7 +15,7 @@ import { AppointmentValidationError } from '../domain/AppointmentErrors';
 
 const jul20 = new Date('2026-07-20T00:00:00Z');
 const jul21 = new Date('2026-07-21T00:00:00Z');
-const jul28 = new Date('2026-07-28T00:00:00Z');
+const _jul28 = new Date('2026-07-28T00:00:00Z');
 
 function makeAppointment(overrides: Partial<Appointment> = {}): Appointment {
   return {

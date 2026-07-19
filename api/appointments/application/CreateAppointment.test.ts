@@ -13,7 +13,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CreateAppointmentUseCase } from './CreateAppointment';
 import { IAppointmentRepository } from '../domain/IAppointmentRepository';
 import { IPetRepository } from '../../pets/domain/IPetRepository';
-import { Appointment, AppointmentStatus, APPOINTMENT_STATUS } from '../domain/Appointment';
+import { APPOINTMENT_STATUS } from '../domain/Appointment';
 import { AppointmentNotFoundError, AppointmentValidationError, AppointmentConflictError } from '../domain/AppointmentErrors';
 import { Pet, PetSex, PetStatus } from '../../pets/domain/Pet';
 import { MAX_NOTES_LENGTH } from '../domain/Appointment';

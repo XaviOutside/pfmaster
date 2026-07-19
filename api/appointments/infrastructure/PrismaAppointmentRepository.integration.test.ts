@@ -8,7 +8,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { PrismaAppointmentRepository } from './PrismaAppointmentRepository';
-import { Appointment, AppointmentStatus, APPOINTMENT_STATUS } from '../domain/Appointment';
+import { APPOINTMENT_STATUS } from '../domain/Appointment';
 import { prisma } from '@api/shared/infrastructure/prisma';
 
 const repo = new PrismaAppointmentRepository();

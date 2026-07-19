@@ -58,10 +58,7 @@ export default function Sidebar() {
   }, []);
 
   const handleNewAppointment = () => {
-    // Dispatch event for AppointmentsPage to open the modal,
-    // then navigate to /calendar if not already there
-    window.dispatchEvent(new CustomEvent('open-appointment-modal'));
-    navigate('/calendar');
+    navigate('/calendar?openModal=true');
   };
 
   return (
