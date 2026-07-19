@@ -137,8 +137,8 @@ api/
 
 ```bash
 # 1. Clonar
-git clone https://github.com/XaviOutside/pfmaster.git
-cd pfmaster
+git clone https://github.com/XaviOutside/peluclic.git
+cd peluclic
 
 # 2. Variables de entorno
 cp .env.example .env
@@ -160,22 +160,154 @@ docker compose exec api npx tsx prisma/seed.ts
 open http://localhost:5173
 ```
 
-### Despliegue en VPS
+### Despliegue en Contabo VPS
+
+#### 1. Preparar la VPS (Ubuntu 24.04)
+
+Conéctate por SSH a tu VPS Contabo y ejecuta:
 
 ```bash
-# 1. VPS con Ubuntu 22.04, Docker + Docker Compose instalados
-# 2. Clonar el repo y configurar .env para producción
-# 3. Construir y arrancar
+# ── Actualizar paquetes ─────────────────────────────────────
+apt update && apt upgrade -y
+
+# ── Instalar Docker ─────────────────────────────────────────
+curl -fsSL https://get.docker.com | bash
+systemctl enable docker
+usermod -aG docker $USER
+
+# ── Verificar instalación ───────────────────────────────────
+docker --version        # ≥ 27
+docker compose version  # ≥ 2
+```
+
+Cierra sesión y vuelve a entrar para que el grupo `docker` tenga efecto.
+
+#### 2. Clonar el Proyecto
+
+```bash
+mkdir -p /opt/peluclic
+cd /opt/peluclic
+git clone https://github.com/XaviOutside/peluclic.git .
+```
+
+#### 3. Configurar Variables de Entorno
+
+Copia el archivo de ejemplo y edítalo con los valores de producción:
+
+```bash
+cp .env.example .env
+nano .env
+```
+
+Variables obligatorias para producción:
+
+```ini
+# Base de datos
+DB_HOST=db
+DB_PORT=3306
+DB_NAME=peluclic
+DB_USER=peluclic
+DB_PASSWORD=<contraseña-segura>
+DB_ROOT_PASSWORD=<contraseña-root>
+
+# API
+NODE_ENV=production
+PORT=3000
+CORS_ORIGIN=https://tudominio.com
+
+# Sentry (opcional)
+SENTRY_DSN=https://xxx@sentry.io/xxx
+SENTRY_ORG=tu-org
+SENTRY_PROJECT=peluclic
+SENTRY_AUTH_TOKEN=sntrys_xxx
+
+# Frontend
+VITE_API_BASE_URL=https://tudominio.com
+```
+
+#### 4. Primer Arranque
+
+```bash
 docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy
+docker compose -f docker-compose.prod.yml exec api npx tsx prisma/seed.ts
+```
 
-# 4. Configurar Nginx como reverse proxy
-#    - Frontend en puerto 5173 (o build estático servido por Nginx)
-#    - API en puerto 3001
-#    - HTTPS con Let's Encrypt (certbot)
+#### 5. Configurar Dominio y HTTPS
 
-# 5. Health check
+Si tienes un dominio (`peluclic.app` o similar), configura Certbot + Nginx:
+
+```bash
+# ── Instalar Certbot ────────────────────────────────────────
+apt install certbot -y
+
+# ── Obtener certificado (modo standalone, detiene Nginx 80) ─
+docker compose -f docker-compose.prod.yml stop web
+certbot certonly --standalone -d peluclic.app -d www.peluclic.app
+docker compose -f docker-compose.prod.yml start web
+
+# ── Renovación automática cada 60 días ──────────────────────
+echo "0 3 * * * docker compose -f /opt/peluclic/docker-compose.prod.yml stop web && certbot renew --quiet && docker compose -f /opt/peluclic/docker-compose.prod.yml start web" | crontab -
+```
+
+Edita `docker/nginx.prod.conf` con tu dominio antes del primer despliegue.
+
+#### 6. Health Check
+
+```bash
+curl http://localhost:3000/api/v1/health
 curl https://tudominio.com/api/v1/health
 ```
+
+### CI/CD con GitHub Actions
+
+El despliegue se automatiza con el workflow `.github/workflows/deploy.yml`. Cada push a `main` ejecuta: lint → build → test → SSH → deploy → migrate → health check.
+
+#### Secrets de GitHub Requeridos
+
+Configura estos secrets en tu repositorio (**Settings → Secrets and variables → Actions**):
+
+| Secret | Descripción | Cómo obtenerlo |
+|---|---|---|
+| `CONTABO_HOST` | IP de la VPS | Panel de Contabo → Your VPS → IP Address |
+| `CONTABO_USER` | Usuario SSH | El que creaste al instalar Ubuntu (ej. `root` o `deploy`) |
+| `CONTABO_SSH_KEY` | Clave privada SSH | `ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/peluclic-deploy` → pega el contenido de la clave **privada** |
+| `CONTABO_SSH_PORT` | Puerto SSH | Normalmente `22`. Solo cámbialo si usas un puerto personalizado |
+
+#### Configurar la Clave SSH para GitHub Actions
+
+En tu máquina local:
+
+```bash
+# 1. Generar par de claves
+ssh-keygen -t ed25519 -C "github-actions-peluclic" -f ~/.ssh/peluclic-deploy
+
+# 2. Copiar clave pública a la VPS
+ssh-copy-id -i ~/.ssh/peluclic-deploy.pub root@<IP-DE-TU-VPS>
+
+# 3. Probar conexión
+ssh -i ~/.ssh/peluclic-deploy root@<IP-DE-TU-VPS> "echo OK"
+
+# 4. Copiar clave privada al portapapeles y guardarla como CONTABO_SSH_KEY en GitHub
+cat ~/.ssh/peluclic-deploy
+```
+
+#### Primer Despliegue Manual (VPS)
+
+Antes de que GitHub Actions funcione, haz el primer deploy manualmente:
+
+```bash
+ssh root@<IP-DE-TU-VPS>
+cd /opt/peluclic
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec api npx prisma migrate deploy
+```
+
+A partir de aquí, cada merge a `main` desplegará automáticamente.
+
+#### Despliegue Manual desde GitHub
+
+También puedes disparar el deploy manualmente desde la UI de GitHub: **Actions → Deploy to Contabo VPS → Run workflow**.
 
 ### Comandos Útiles
 
