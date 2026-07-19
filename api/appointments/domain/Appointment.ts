@@ -17,7 +17,7 @@ export const APPOINTMENT_STATUS = {
   CANCELLED: 3 as AppointmentStatus,
 } as const;
 
-export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
+export const APPOINTMENT_STATUS_LABELS: Record<number, string> = {
   [APPOINTMENT_STATUS.PENDING]: 'pending',
   [APPOINTMENT_STATUS.CONFIRMED]: 'confirmed',
   [APPOINTMENT_STATUS.COMPLETED]: 'completed',
