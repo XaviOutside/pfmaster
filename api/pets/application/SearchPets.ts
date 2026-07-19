@@ -10,12 +10,12 @@ export class SearchPetsUseCase {
   constructor(private readonly repository: IPetRepository) {}
 
   async execute(params: SearchPetsParams): Promise<Pet[]> {
-    const sanitized = sanitizeFtsQuery(params.query);
+    const { query, isEmpty } = sanitizeFtsQuery(params.query);
 
-    if (!sanitized) {
+    if (isEmpty) {
       return [];
     }
 
-    return this.repository.search(sanitized);
+    return this.repository.search(query);
   }
 }
