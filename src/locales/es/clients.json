@@ -37,6 +37,12 @@
     "success": "{{name}} desactivado.",
     "error": "Error al desactivar."
   },
+  "reactivate": {
+    "title": "Reactivar cliente",
+    "message": "¿Estás seguro de que deseas reactivar a {{name}}?",
+    "success": "{{name}} reactivado.",
+    "error": "Error al reactivar."
+  },
   "detail": {
     "notFound": "Cliente no encontrado",
     "notFoundMessage": "El cliente que buscas no existe o ha sido eliminado.",
