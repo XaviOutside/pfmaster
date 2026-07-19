@@ -42,46 +42,43 @@ export function initSentry(): void {
  */
 export function createSentryStream(): { write(chunk: string): void } {
   return {
-    write(chunk: string) {
-      // pino may write multiple JSON lines per chunk
+    write(chunk: string): void {
       const lines = chunk.trim().split('\n');
       for (const line of lines) {
-        try {
-          const log = JSON.parse(line);
-          const pinoLevel = log.level as number; // 10=trace, 20=debug, 30=info, 40=warn, 50=error, 60=fatal
-
-          // Clean up pino-internal noise from extra data
-          const { level, time, pid, hostname, msg, err, ...extra } = log;
-          const message: string = typeof msg === 'string' ? msg : JSON.stringify(msg);
-
-          if (pinoLevel >= 50) {
-            // error or fatal
-            const error = err
-              ? new Error(typeof err === 'string' ? err : err.message ?? message)
-              : new Error(message);
-            Sentry.captureException(error, {
-              level: 'error',
-              extra: { ...extra, pinoLevel, hostname },
-            });
-          } else if (pinoLevel >= 40) {
-            // warn
-            Sentry.captureMessage(message, {
-              level: 'warning',
-              extra: { ...extra, pinoLevel },
-            });
-          } else {
-            // info, debug, trace → breadcrumb
-            Sentry.addBreadcrumb({
-              category: 'log',
-              message: message || '(no message)',
-              level: pinoLevel >= 30 ? 'info' : 'debug',
-              data: extra,
-            });
-          }
-        } catch {
-          // Parse error — silently skip (this stream must never throw)
-        }
+        processLogLine(line);
       }
     },
   };
+}
+
+function processLogLine(line: string): void {
+  try {
+    const log = JSON.parse(line);
+    const pinoLevel = log.level as number;
+    const { hostname, msg, err, ...extra } = log;
+    const message: string = typeof msg === 'string' ? msg : JSON.stringify(msg);
+
+    if (pinoLevel >= 50) {
+      const errorMessage = typeof err === 'string' ? err : (err.message ?? message);
+      const error = err ? new Error(errorMessage) : new Error(message);
+      Sentry.captureException(error, {
+        level: 'error',
+        extra: { ...extra, pinoLevel, hostname },
+      });
+    } else if (pinoLevel >= 40) {
+      Sentry.captureMessage(message, {
+        level: 'warning',
+        extra: { ...extra, pinoLevel },
+      });
+    } else {
+      Sentry.addBreadcrumb({
+        category: 'log',
+        message: message || '(no message)',
+        level: pinoLevel >= 30 ? 'info' : 'debug',
+        data: extra,
+      });
+    }
+  } catch {
+    // Parse error — silently skip (this stream must never throw)
+  }
 }

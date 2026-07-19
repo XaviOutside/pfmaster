@@ -216,16 +216,17 @@ export default function DataTable<T>({
               const spanClass =
                 col.span || `sm:col-span-${Math.max(1, Math.floor(12 / totalCols))}`;
 
+              let displayClass = 'flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-0';
+              if (isFirst) {
+                displayClass = 'flex items-center gap-3';
+              } else if (!col.mobileVisible && col.mobileVisible !== undefined) {
+                displayClass = 'hidden sm:flex sm:flex-col sm:gap-1';
+              }
+
               return (
                 <div
                   key={`cell-${rowKey(row)}-${idx}`}
-                  className={`${
-                    isFirst
-                      ? 'flex items-center gap-3'
-                      : !col.mobileVisible && col.mobileVisible !== undefined
-                        ? 'hidden sm:flex sm:flex-col sm:gap-1'
-                        : 'flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-0'
-                  } ${spanClass} ${alignClass}`}
+                  className={`${displayClass} ${spanClass} ${alignClass}`}
                   data-testid={`cell-${col.header.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   {isFirst && avatarName && (
