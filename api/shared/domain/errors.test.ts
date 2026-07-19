@@ -8,7 +8,7 @@
  * - instanceof checks
  */
 import { describe, it, expect } from 'vitest';
-import { NotFoundError, ValidationError, AlreadyDeletedError } from './errors';
+import { NotFoundError, ValidationError, AlreadyDeletedError, ConflictError } from './errors';
 
 describe('NotFoundError', () => {
   it('formats the message with entity name and id', () => {
@@ -52,5 +52,20 @@ describe('AlreadyDeletedError', () => {
   it('works with any entity name and id', () => {
     const err = new AlreadyDeletedError('Client', 7);
     expect(err.message).toBe('Client with id 7 is already deleted');
+  });
+});
+
+describe('ConflictError', () => {
+  it('formats the message with entity name and details', () => {
+    const err = new ConflictError('Appointment', 'Pet already booked at this time');
+    expect(err.message).toBe('Conflict on Appointment: Pet already booked at this time');
+    expect(err.name).toBe('ConflictError');
+    expect(err).toBeInstanceOf(Error);
+    expect(err).toBeInstanceOf(ConflictError);
+  });
+
+  it('works with any entity and detail message', () => {
+    const err = new ConflictError('Service', 'Cannot delete — in use');
+    expect(err.message).toBe('Conflict on Service: Cannot delete — in use');
   });
 });

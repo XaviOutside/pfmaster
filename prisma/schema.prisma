@@ -61,6 +61,22 @@ model Service {
   @@map("services")
 }
 
+model Appointment {
+  id          Int       @id @default(autoincrement())
+  pet_id      Int       // ref: pets.id — no FK constraint (per project rules)
+  client_id   Int       // ref: clients.id — denormalized from pet on create (per project rules)
+  scheduledAt DateTime  @map("scheduled_at")
+  status      Int       @db.TinyInt @default(0) // 0=pending, 1=confirmed, 2=completed, 3=cancelled
+  notes       String?   @db.VarChar(500)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([pet_id])
+  @@index([client_id])
+  @@index([scheduledAt])
+  @@map("appointments")
+}
+
 model CompanySettings {
   id            Int      @id @default(autoincrement())
   companyName   String   @map("company_name") @db.VarChar(200)
