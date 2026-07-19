@@ -207,7 +207,7 @@ export default function ClientDetailPage() {
         message={
           confirmAction === 'deactivate'
             ? t('deactivate.message', { name: client.name })
-            : t('deactivate.message', { name: client.name })
+            : t('reactivate.message', { name: client.name })
         }
         confirmLabel={confirmAction === 'deactivate' ? t('common:actions.deactivate') : t('common:actions.reactivate')}
         destructive={confirmAction === 'deactivate'}
