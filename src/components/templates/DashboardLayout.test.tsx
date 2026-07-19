@@ -11,8 +11,8 @@ describe('DashboardLayout', () => {
       </MemoryRouter>,
     );
 
-    // Sidebar has unique brand text "Bark & Bubbles" (hardcoded, not i18n)
-    expect(screen.getByText('Bark & Bubbles')).toBeInTheDocument();
+    // Sidebar has unique nav text (i18n key from Sidebar, not dependent on API fetch)
+    expect(screen.getByText('navigation.newAppointment')).toBeInTheDocument();
   });
 
   it('renders the MobileNav component', () => {
