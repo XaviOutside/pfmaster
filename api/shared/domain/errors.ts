@@ -31,3 +31,10 @@ export class ValidationError extends Error {
     this.name = 'ValidationError';
   }
 }
+
+export class ConflictError extends Error {
+  constructor(entity: string, detail: string) {
+    super(`Conflict on ${entity}: ${detail}`);
+    this.name = 'ConflictError';
+  }
+}
