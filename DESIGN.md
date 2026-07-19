@@ -1,5 +1,5 @@
 ---
-name: Canine Concierge
+name: Peluclic
 colors:
   surface: '#f9f9ff'
   surface-dim: '#cfdaf1'
