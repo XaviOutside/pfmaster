@@ -153,10 +153,10 @@ export class PrismaClientRepository implements IClientRepository {
     // Post-filter: ngram FTS can produce false positives from shared ngrams.
     // Verify the query actually appears as a substring in at least one searched field.
     // Strip accents for comparison (MySQL collation handles this, JS does not).
-    const stripAccents = (s: string) =>
+    const stripAccents = (s: string): string =>
       s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const lowerQuery = stripAccents(sanitizedQuery).toLowerCase();
-    const fieldMatches = (value: string | null) =>
+    const fieldMatches = (value: string | null): boolean =>
       value !== null && stripAccents(value).toLowerCase().includes(lowerQuery);
 
     const matching = rows.filter((row) => {

@@ -7,7 +7,7 @@ import { toSettingsResponseDto } from './dtos/SettingsResponseDto';
 import type { UpdateSettingsDto } from './dtos/UpdateSettingsDto';
 import type { UpdateSettingsInput } from '../domain/CompanySettings';
 import { MAX_LOGO_SIZE } from '../domain/CompanySettings';
-import { createWriteStream, existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 import { writeFile } from 'fs/promises';
 import path from 'path';
 

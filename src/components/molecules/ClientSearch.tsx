@@ -19,7 +19,6 @@ export default function ClientSearch({ onSelect, selectedClientId }: ClientSearc
   const [results, setResults] = useState<Client[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleChange = useCallback(
@@ -55,7 +54,6 @@ export default function ClientSearch({ onSelect, selectedClientId }: ClientSearc
   );
 
   const handleSelect = (client: Client) => {
-    setSelectedClient(client);
     setQuery(client.name);
     setIsOpen(false);
     onSelect(client);

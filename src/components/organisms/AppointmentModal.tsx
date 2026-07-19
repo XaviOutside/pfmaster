@@ -145,6 +145,13 @@ export default function AppointmentModal({
 
   if (!isOpen) return null;
 
+  let placeholderText = '--';
+  if (petsLoading) {
+    placeholderText = '...';
+  } else if (pets.length === 0) {
+    placeholderText = t('form.noPetsFound');
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
@@ -186,13 +193,7 @@ export default function AppointmentModal({
               disabled={pets.length === 0 || petsLoading}
               className="rounded-lg border border-outline-variant bg-surface px-3 py-2 font-body text-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
             >
-              <option value="">
-                {petsLoading
-                  ? '...'
-                  : pets.length === 0
-                    ? t('form.noPetsFound')
-                    : '--'}
-              </option>
+              <option value="">{placeholderText}</option>
               {pets.map((pet) => (
                 <option key={pet.id} value={pet.id}>
                   {pet.name} ({pet.species})

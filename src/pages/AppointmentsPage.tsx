@@ -89,7 +89,7 @@ export default function AppointmentsPage() {
   const handlePrevWeek = () => goToWeek(-1);
   const handleNextWeek = () => goToWeek(1);
 
-  const handleAppointmentClick = (appointment: Appointment) => {
+  const handleAppointmentClick = (_appointment: Appointment) => {
     // For v1, clicking opens the modal (view-only would be phase 2)
     setIsModalOpen(true);
   };

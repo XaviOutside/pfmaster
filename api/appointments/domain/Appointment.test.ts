@@ -13,7 +13,6 @@ import { describe, it, expect } from 'vitest';
 import {
   APPOINTMENT_STATUS,
   type AppointmentStatus,
-  type Appointment,
   type CreateAppointmentInput,
   makeAppointment,
   validateAppointment,

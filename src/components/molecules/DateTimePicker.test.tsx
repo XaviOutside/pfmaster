@@ -50,7 +50,7 @@ describe('DateTimePicker', () => {
       />,
     );
 
-    const timeSelect = screen.getByLabelText(/time/i);
+    screen.getByLabelText(/time/i);
     expect(screen.getByText('09:00')).toBeInTheDocument();
     expect(screen.getByText('17:00')).toBeInTheDocument();
 
