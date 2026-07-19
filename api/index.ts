@@ -40,6 +40,13 @@ import { SoftDeleteServiceUseCase } from './services/application/SoftDeleteServi
 import { SearchServicesUseCase } from './services/application/SearchServices';
 import { ServiceController } from './services/interface/ServiceController';
 import { createServiceRouter } from './services/interface/serviceRouter';
+import { PrismaAppointmentRepository } from './appointments/infrastructure/PrismaAppointmentRepository';
+import { CreateAppointmentUseCase } from './appointments/application/CreateAppointment';
+import { GetAppointmentUseCase } from './appointments/application/GetAppointment';
+import { ListAppointmentsUseCase } from './appointments/application/ListAppointments';
+import { UpdateAppointmentUseCase } from './appointments/application/UpdateAppointment';
+import { AppointmentController } from './appointments/interface/AppointmentController';
+import { createAppointmentRouter } from './appointments/interface/appointmentRouter';
 import { PrismaSettingsRepository } from './settings/infrastructure/PrismaSettingsRepository';
 import { GetSettingsUseCase } from './settings/application/GetSettings';
 import { UpdateSettingsUseCase } from './settings/application/UpdateSettings';
@@ -132,6 +139,16 @@ const serviceController = new ServiceController(
   new SearchServicesUseCase(serviceRepository),
 );
 app.use('/api/v1/services', createServiceRouter(serviceController));
+
+// Appointments bounded context — wire dependencies
+const appointmentRepository = new PrismaAppointmentRepository();
+const appointmentController = new AppointmentController(
+  new CreateAppointmentUseCase(appointmentRepository, petRepository),
+  new GetAppointmentUseCase(appointmentRepository),
+  new ListAppointmentsUseCase(appointmentRepository),
+  new UpdateAppointmentUseCase(appointmentRepository),
+);
+app.use('/api/v1/appointments', createAppointmentRouter(appointmentController));
 
 // Settings bounded context — wire dependencies
 const settingsRepository = new PrismaSettingsRepository();
