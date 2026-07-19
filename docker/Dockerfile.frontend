@@ -1,0 +1,12 @@
+# ── Production Frontend Builder ────────────────────────────────
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npx vite build
+
+# dist/ is the output — mounted as a volume by docker-compose
