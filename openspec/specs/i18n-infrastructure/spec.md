@@ -8,7 +8,7 @@ Multi-language support for the pfmaster frontend via react-i18next. Extracts all
 
 ### Requirement: i18n Framework Configuration
 
-The system MUST initialize react-i18next at app startup with 6 namespaces (`common`, `landing`, `clients`, `pets`, `services`, `validation`), `i18next-browser-languagedetector` with `navigator.language` detection, and `en` fallback. The `<html lang>` attribute SHALL sync to the active language.
+The system MUST initialize react-i18next at app startup with 7 namespaces (`common`, `landing`, `clients`, `pets`, `services`, `validation`, `appointments`), `i18next-browser-languagedetector` with `navigator.language` detection, and `en` fallback. The `<html lang>` attribute SHALL sync to the active language.
 
 #### Scenario: Spanish browser preference
 
@@ -30,19 +30,19 @@ The system MUST initialize react-i18next at app startup with 6 namespaces (`comm
 
 ### Requirement: Locale File Structure
 
-The system MUST provide 12 locale JSON files under `src/locales/{en,es}/` — one per namespace per language. Keys SHALL follow `section.subsection.label` convention. Every key present in `es` MUST have a corresponding `en` entry. All existing Spanish text SHALL be preserved as-is in `es` files.
+The system MUST provide 14 locale JSON files under `src/locales/{en,es}/` — one per namespace per language, including `appointments`. Keys SHALL follow `section.subsection.label` convention. Every key present in `es` MUST have a corresponding `en` entry.
 
 #### Scenario: Key parity across languages
 
-- GIVEN `es/common.json` has key `"nav.clients"`
-- WHEN the `en/common.json` file is inspected
-- THEN key `"nav.clients"` exists with the English equivalent "Clients"
+- GIVEN `es/appointments.json` has key `"status.pending"`
+- WHEN the `en/appointments.json` file is inspected
+- THEN key `"status.pending"` exists with the English equivalent "Pending"
 
 #### Scenario: Namespace isolation
 
-- GIVEN a component uses `useTranslation('clients')`
-- WHEN `t('form.label.name')` is called
-- THEN the key resolves from `src/locales/{lang}/clients.json` exclusively
+- GIVEN a component uses `useTranslation('appointments')`
+- WHEN `t('calendar.weekOf')` is called
+- THEN the key resolves from `src/locales/{lang}/appointments.json` exclusively
 
 ### Requirement: Component String Extraction
 
