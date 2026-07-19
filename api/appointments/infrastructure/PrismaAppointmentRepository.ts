@@ -1,5 +1,5 @@
 import { prisma } from '@api/shared/infrastructure/prisma';
-import { Appointment, CreateAppointmentInput } from '../domain/Appointment';
+import { Appointment, AppointmentDetails, CreateAppointmentInput } from '../domain/Appointment';
 import { IAppointmentRepository } from '../domain/IAppointmentRepository';
 
 /**
@@ -49,6 +49,57 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
     });
 
     return rows.map((row) => this.mapToAppointment(row));
+  }
+
+  async findByDateRangeWithDetails(start: Date, end: Date): Promise<AppointmentDetails[]> {
+    // LEFT JOIN pets and clients to get display names.
+    // No FK constraints per project rules — plain INT columns.
+    const rows = await prisma.$queryRawUnsafe<
+      Array<{
+        id: number;
+        pet_id: number;
+        client_id: number;
+        scheduledAt: string;
+        status: number;
+        notes: string | null;
+        createdAt: string;
+        updatedAt: string;
+        pet_name: string;
+        client_name: string;
+      }>
+    >(
+      `SELECT
+        a.id,
+        a.pet_id,
+        a.client_id,
+        a.scheduled_at AS scheduledAt,
+        a.status,
+        a.notes,
+        a.created_at AS createdAt,
+        a.updated_at AS updatedAt,
+        COALESCE(p.name, '') AS pet_name,
+        COALESCE(c.name, '') AS client_name
+      FROM appointments a
+      LEFT JOIN pets p ON p.id = a.pet_id
+      LEFT JOIN clients c ON c.id = a.client_id
+      WHERE a.scheduled_at >= ? AND a.scheduled_at <= ?
+      ORDER BY a.scheduled_at ASC`,
+      start,
+      end,
+    );
+
+    return rows.map((row) => ({
+      id: Number(row.id),
+      petId: Number(row.pet_id),
+      clientId: Number(row.client_id),
+      scheduledAt: new Date(row.scheduledAt),
+      status: Number(row.status) as AppointmentDetails['status'],
+      notes: row.notes,
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+      petName: row.pet_name,
+      clientName: row.client_name,
+    }));
   }
 
   async existsByPetAndTime(

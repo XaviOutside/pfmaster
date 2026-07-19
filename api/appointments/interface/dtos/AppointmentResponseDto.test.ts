@@ -5,14 +5,15 @@
  * into the API response shape:
  *   - Dates → ISO 8601 strings
  *   - TINYINT status → numeric status
+ *   - Joined petName and clientName from details query
  *   - Domain camelCase keys preserved
  *   - No internal/deleted fields leaked
  */
 import { describe, it, expect } from 'vitest';
 import { APPOINTMENT_STATUS } from '../../domain/Appointment';
 import type { Appointment } from '../../domain/Appointment';
+import type { AppointmentDetails } from '../../domain/Appointment';
 
-// Import will fail until Task 3.4 creates the file — this is RED.
 import { toAppointmentResponseDto } from './AppointmentResponseDto';
 
 const domainAppointment: Appointment = {
@@ -24,6 +25,12 @@ const domainAppointment: Appointment = {
   notes: 'First visit — check for matting',
   createdAt: new Date('2026-07-19T10:00:00.000Z'),
   updatedAt: new Date('2026-07-19T10:00:00.000Z'),
+};
+
+const domainAppointmentDetails: AppointmentDetails = {
+  ...domainAppointment,
+  petName: 'Max',
+  clientName: 'Maria Garcia',
 };
 
 describe('toAppointmentResponseDto', () => {
@@ -40,6 +47,20 @@ describe('toAppointmentResponseDto', () => {
       createdAt: '2026-07-19T10:00:00.000Z',
       updatedAt: '2026-07-19T10:00:00.000Z',
     });
+  });
+
+  it('includes joined petName and clientName from AppointmentDetails', () => {
+    const dto = toAppointmentResponseDto(domainAppointmentDetails);
+
+    expect(dto.petName).toBe('Max');
+    expect(dto.clientName).toBe('Maria Garcia');
+  });
+
+  it('petName and clientName are empty strings when not available', () => {
+    const dto = toAppointmentResponseDto(domainAppointment);
+
+    expect(dto.petName).toBe('');
+    expect(dto.clientName).toBe('');
   });
 
   it('converts all Date fields to ISO 8601 strings', () => {
@@ -79,14 +100,15 @@ describe('toAppointmentResponseDto', () => {
   it('does not leak internal domain fields', () => {
     const dto = toAppointmentResponseDto(domainAppointment);
 
-    // DTO should only have expected keys — no extra internal fields
     const keys = Object.keys(dto).sort();
     expect(keys).toEqual([
       'clientId',
+      'clientName',
       'createdAt',
       'id',
       'notes',
       'petId',
+      'petName',
       'scheduledAt',
       'status',
       'updatedAt',

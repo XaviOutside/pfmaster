@@ -39,6 +39,15 @@ export interface Appointment {
   updatedAt: Date;
 }
 
+/**
+ * Extended entity that includes joined pet and client names
+ * for display in calendar views (avoids N+1 lookups on the frontend).
+ */
+export interface AppointmentDetails extends Appointment {
+  petName: string;
+  clientName: string;
+}
+
 // ── Input type ────────────────────────────────────────────────────────────────
 
 export interface CreateAppointmentInput {

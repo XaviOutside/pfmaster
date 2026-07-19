@@ -41,7 +41,9 @@ const domainAppointment: Appointment = {
 const expectedDto = {
   id: 1,
   petId: 7,
+  petName: '',
   clientId: 42,
+  clientName: '',
   scheduledAt: '2026-07-20T14:00:00.000Z',
   status: 0,
   notes: 'First visit',
@@ -52,7 +54,7 @@ const expectedDto = {
 // Mock use case instances
 const mockCreate = { execute: vi.fn() } as unknown as CreateAppointmentUseCase;
 const mockGet = { execute: vi.fn() } as unknown as GetAppointmentUseCase;
-const mockList = { execute: vi.fn() } as unknown as ListAppointmentsUseCase;
+const mockList = { execute: vi.fn(), executeWithDetails: vi.fn() } as unknown as ListAppointmentsUseCase;
 const mockUpdate = { execute: vi.fn() } as unknown as UpdateAppointmentUseCase;
 
 const controller = new AppointmentController(
@@ -152,7 +154,7 @@ describe('POST /api/v1/appointments', () => {
 
 describe('GET /api/v1/appointments', () => {
   it('returns 200 with appointment list filtered by date range', async () => {
-    (mockList.execute as ReturnType<typeof vi.fn>).mockResolvedValueOnce([domainAppointment]);
+    (mockList.executeWithDetails as ReturnType<typeof vi.fn>).mockResolvedValueOnce([domainAppointment]);
 
     const res = await request(makeApp())
       .get('/api/v1/appointments?start=2026-07-20&end=2026-07-26');
@@ -164,7 +166,7 @@ describe('GET /api/v1/appointments', () => {
   });
 
   it('returns 200 with empty array when no appointments in range', async () => {
-    (mockList.execute as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
+    (mockList.executeWithDetails as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
 
     const res = await request(makeApp())
       .get('/api/v1/appointments?start=2026-07-20&end=2026-07-26');
@@ -174,7 +176,7 @@ describe('GET /api/v1/appointments', () => {
   });
 
   it('returns 422 when start is not before end (AppointmentValidationError)', async () => {
-    (mockList.execute as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+    (mockList.executeWithDetails as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
       new AppointmentValidationError('start must be before end'),
     );
 

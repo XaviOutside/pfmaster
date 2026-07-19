@@ -111,7 +111,7 @@ export class AppointmentController {
     }
 
     try {
-      const appointments = await this.listAppointmentsUseCase.execute(start, end);
+      const appointments = await this.listAppointmentsUseCase.executeWithDetails(start, end);
       res.status(200).json(appointments.map(toAppointmentResponseDto));
     } catch (err) {
       handleError(err, res);

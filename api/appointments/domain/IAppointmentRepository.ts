@@ -2,7 +2,7 @@
  * Repository interface for the appointments bounded context.
  * Domain types only — no Prisma, no Express, no framework imports.
  */
-import { Appointment, CreateAppointmentInput } from './Appointment';
+import { Appointment, AppointmentDetails, CreateAppointmentInput } from './Appointment';
 
 export interface IAppointmentRepository {
   /** Persists a new appointment. Returns the created entity with auto-generated id. */
@@ -13,6 +13,12 @@ export interface IAppointmentRepository {
 
   /** Finds all appointments whose scheduled_at falls within [start, end] (inclusive). */
   findByDateRange(start: Date, end: Date): Promise<Appointment[]>;
+
+  /**
+   * Same as findByDateRange but LEFT JOINs pet name and client name.
+   * Returns AppointmentDetails[] with petName and clientName populated.
+   */
+  findByDateRangeWithDetails(start: Date, end: Date): Promise<AppointmentDetails[]>;
 
   /** Checks whether a pet already has an appointment at the exact scheduled time. */
   existsByPetAndTime(petId: number, scheduledAt: Date): Promise<boolean>;

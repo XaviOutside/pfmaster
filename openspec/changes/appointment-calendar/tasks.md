@@ -51,14 +51,14 @@ Chain strategy: stacked-to-main
 
 ## Phase 3: Backend API Surface (Interface + Wiring)
 
-- [ ] 3.1 Create `api/appointments/interface/dtos/CreateAppointmentDto.ts` — petId, scheduledAt (ISO string), notes? (max 500)
-- [ ] 3.2 Create `api/appointments/interface/dtos/AppointmentResponseDto.ts` — id, petId, petName, clientId, clientName, scheduledAt, status, notes, createdAt. Include `toAppointmentResponseDto()` mapper
-- [ ] 3.3 TDD-RED: Write `AppointmentResponseDto.test.ts` — mapper transforms entity to DTO with string status
-- [ ] 3.4 TDD-GREEN: Implement `toAppointmentResponseDto()` mapper
-- [ ] 3.5 TDD-RED: Write `AppointmentController.test.ts` — POST 201/400/409/422, GET /:id 200/404, GET ?start&end 200, PATCH status transitions
-- [ ] 3.6 TDD-GREEN: Create `api/appointments/interface/AppointmentController.ts` — `createAppointment(req, res)`, `getAppointment(req, res)`, `listAppointments(req, res)`, `updateAppointment(req, res)`. Parse positive int :id, map domain errors → HTTP status
-- [ ] 3.7 Create `api/appointments/interface/appointmentRouter.ts` — `POST /`, `GET /`, `GET /:id`, `PATCH /:id`. Use `express.Router()` pattern matching existing routers
-- [ ] 3.8 Wire appointments context in `api/index.ts` — instantiate `PrismaAppointmentRepository`, all use cases, `AppointmentController`, mount at `/api/v1/appointments`
+- [x] 3.1 Create `api/appointments/interface/dtos/CreateAppointmentDto.ts` — petId, scheduledAt (ISO string), notes? (max 500)
+- [x] 3.2 Create `api/appointments/interface/dtos/AppointmentResponseDto.ts` — id, petId, petName, clientId, clientName, scheduledAt, status, notes, createdAt. Include `toAppointmentResponseDto()` mapper
+- [x] 3.3 TDD-RED: Write `AppointmentResponseDto.test.ts` — mapper transforms entity to DTO with string status
+- [x] 3.4 TDD-GREEN: Implement `toAppointmentResponseDto()` mapper
+- [x] 3.5 TDD-RED: Write `AppointmentController.test.ts` — POST 201/400/409/422, GET /:id 200/404, GET ?start&end 200, PATCH status transitions
+- [x] 3.6 TDD-GREEN: Create `api/appointments/interface/AppointmentController.ts` — `createAppointment(req, res)`, `getAppointment(req, res)`, `listAppointments(req, res)`, `updateAppointment(req, res)`. Parse positive int :id, map domain errors → HTTP status
+- [x] 3.7 Create `api/appointments/interface/appointmentRouter.ts` — `POST /`, `GET /`, `GET /:id`, `PATCH /:id`. Use `express.Router()` pattern matching existing routers
+- [x] 3.8 Wire appointments context in `api/index.ts` — instantiate `PrismaAppointmentRepository`, all use cases, `AppointmentController`, mount at `/api/v1/appointments`
 
 ## Phase 4: Frontend Infrastructure (i18n + Types + Services + Utils)
 
