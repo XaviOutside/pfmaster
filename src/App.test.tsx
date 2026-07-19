@@ -33,8 +33,8 @@ describe('App routing — dashboard routes', () => {
     // Dashboard page content — clients page container is visible
     expect(screen.getByTestId('clients-page')).toBeInTheDocument();
 
-    // Sidebar must be present on dashboard routes ("Bark & Bubbles" is hardcoded)
-    expect(screen.getByText('Bark & Bubbles')).toBeInTheDocument();
+    // Sidebar must be present on dashboard routes (logo image is unique to Sidebar)
+    expect(screen.getByAltText('Bark & Bubbles logo')).toBeInTheDocument();
 
     // MobileNav must be present on dashboard routes (i18n key from MobileNav)
     expect(screen.getByText('mobileNav.home')).toBeInTheDocument();

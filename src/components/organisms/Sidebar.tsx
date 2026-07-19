@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '@/components/molecules/LanguageSwitcher';
+import { getSettings } from '@/services/settings';
 
 interface NavItem {
   to: string;
@@ -27,23 +29,57 @@ const linkBaseClasses =
 
 export default function Sidebar() {
   const { t } = useTranslation('common');
+  const [companyName, setCompanyName] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [tagline, setTagline] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const settings = await getSettings();
+        if (!cancelled) {
+          setCompanyName(settings.companyName);
+          setLogoUrl(settings.logoUrl);
+          setTagline(settings.tagline);
+        }
+      } catch {
+        // Settings not available — leave name empty (no fallback per spec)
+      }
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <nav className="fixed left-0 top-0 z-40 hidden h-full w-64 flex-col border-r border-outline-variant bg-surface-container p-4 md:flex">
       {/* Brand */}
       <div className="mb-8 flex flex-col items-center px-4">
         <div className="mb-3 h-16 w-16 overflow-hidden rounded-full border-2 border-primary">
-          <img
-            className="h-full w-full object-cover"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfv-uR_56YCYol0OaJcsEIWvcDfY9NNKTyTA9IxsCv1QUKIFIsUuPBC8f4M9aZkOh5ReqNIEakQ3ER2kuZaCcU6111VlxsT3_2YEO-RFaPjWEx_P5RrJxej4VgbHIXZy9zwZ1nIrIXWLsnZK-JkBxTnXcSZ-l9ePZ_SxVu_RJccD1Jnr2iMNNTr4WgD-kPga8FQbr9j6r2H4DP6WB8c4lp5WpQZ214wUFt2Ho7Fe7snr3Jl2q8VTx-CDmiPzzt_nUgu0z2Un-By2U"
-            alt="Bark & Bubbles logo"
-          />
+          {logoUrl ? (
+            <img
+              className="h-full w-full object-contain"
+              src={logoUrl}
+              alt={companyName ?? 'Company logo'}
+            />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-2xl text-on-surface-variant/40 material-symbols-outlined">
+              pets
+            </span>
+          )}
         </div>
-        <h1 className="text-center font-headline text-headline-md text-primary">
-          Bark &amp; Bubbles
-        </h1>
+        {companyName !== null && (
+          <h1 className="text-center font-headline text-headline-md text-primary">
+            {companyName}
+          </h1>
+        )}
         <p className="mt-1 text-center font-label text-label-sm text-on-surface-variant">
-          {t('navigation.brandSubtitle')}
+          {tagline || t('navigation.brandSubtitle')}
         </p>
       </div>
 
