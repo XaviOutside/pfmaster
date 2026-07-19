@@ -9,6 +9,7 @@ import servicesEs from '@/locales/es/services.json';
 import landingEs from '@/locales/es/landing.json';
 import validationEs from '@/locales/es/validation.json';
 import settingsEs from '@/locales/es/settings.json';
+import appointmentsEs from '@/locales/es/appointments.json';
 
 import commonEn from '@/locales/en/common.json';
 import clientsEn from '@/locales/en/clients.json';
@@ -17,6 +18,7 @@ import servicesEn from '@/locales/en/services.json';
 import landingEn from '@/locales/en/landing.json';
 import validationEn from '@/locales/en/validation.json';
 import settingsEn from '@/locales/en/settings.json';
+import appointmentsEn from '@/locales/en/appointments.json';
 
 import { getSettings } from '@/services/settings';
 import { LANG_MAP } from '@/types/settings';
@@ -34,6 +36,7 @@ i18n
         landing: landingEs,
         validation: validationEs,
         settings: settingsEs,
+        appointments: appointmentsEs,
       },
       en: {
         common: commonEn,
@@ -43,6 +46,7 @@ i18n
         landing: landingEn,
         validation: validationEn,
         settings: settingsEn,
+        appointments: appointmentsEn,
       },
     },
     fallbackLng: 'en',

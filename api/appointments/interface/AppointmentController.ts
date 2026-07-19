@@ -5,6 +5,7 @@ import { GetAppointmentUseCase } from '../application/GetAppointment';
 import { ListAppointmentsUseCase } from '../application/ListAppointments';
 import { UpdateAppointmentUseCase } from '../application/UpdateAppointment';
 import { APPOINTMENT_STATUS } from '../domain/Appointment';
+import type { AppointmentStatus } from '../domain/Appointment';
 import {
   AppointmentNotFoundError,
   AppointmentValidationError,
@@ -111,7 +112,7 @@ export class AppointmentController {
     }
 
     try {
-      const appointments = await this.listAppointmentsUseCase.execute(start, end);
+      const appointments = await this.listAppointmentsUseCase.executeWithDetails(start, end);
       res.status(200).json(appointments.map(toAppointmentResponseDto));
     } catch (err) {
       handleError(err, res);
@@ -131,7 +132,7 @@ export class AppointmentController {
     try {
       const { scheduledAt, notes, status } = req.body;
 
-      const updateData: { scheduledAt?: Date; notes?: string | null; status?: number } = {};
+      const updateData: { scheduledAt?: Date; notes?: string | null; status?: AppointmentStatus } = {};
 
       if (scheduledAt !== undefined) {
         updateData.scheduledAt = new Date(scheduledAt);
@@ -140,7 +141,7 @@ export class AppointmentController {
         updateData.notes = notes;
       }
       if (status !== undefined) {
-        updateData.status = status;
+        updateData.status = status as AppointmentStatus;
       }
 
       const appointment = await this.updateAppointmentUseCase.execute(id, updateData);

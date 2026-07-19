@@ -17,7 +17,7 @@ export const APPOINTMENT_STATUS = {
   CANCELLED: 3 as AppointmentStatus,
 } as const;
 
-export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
+export const APPOINTMENT_STATUS_LABELS: Record<number, string> = {
   [APPOINTMENT_STATUS.PENDING]: 'pending',
   [APPOINTMENT_STATUS.CONFIRMED]: 'confirmed',
   [APPOINTMENT_STATUS.COMPLETED]: 'completed',
@@ -37,6 +37,15 @@ export interface Appointment {
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+/**
+ * Extended entity that includes joined pet and client names
+ * for display in calendar views (avoids N+1 lookups on the frontend).
+ */
+export interface AppointmentDetails extends Appointment {
+  petName: string;
+  clientName: string;
 }
 
 // ── Input type ────────────────────────────────────────────────────────────────

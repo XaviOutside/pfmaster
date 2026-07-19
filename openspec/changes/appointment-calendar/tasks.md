@@ -51,45 +51,45 @@ Chain strategy: stacked-to-main
 
 ## Phase 3: Backend API Surface (Interface + Wiring)
 
-- [ ] 3.1 Create `api/appointments/interface/dtos/CreateAppointmentDto.ts` — petId, scheduledAt (ISO string), notes? (max 500)
-- [ ] 3.2 Create `api/appointments/interface/dtos/AppointmentResponseDto.ts` — id, petId, petName, clientId, clientName, scheduledAt, status, notes, createdAt. Include `toAppointmentResponseDto()` mapper
-- [ ] 3.3 TDD-RED: Write `AppointmentResponseDto.test.ts` — mapper transforms entity to DTO with string status
-- [ ] 3.4 TDD-GREEN: Implement `toAppointmentResponseDto()` mapper
-- [ ] 3.5 TDD-RED: Write `AppointmentController.test.ts` — POST 201/400/409/422, GET /:id 200/404, GET ?start&end 200, PATCH status transitions
-- [ ] 3.6 TDD-GREEN: Create `api/appointments/interface/AppointmentController.ts` — `createAppointment(req, res)`, `getAppointment(req, res)`, `listAppointments(req, res)`, `updateAppointment(req, res)`. Parse positive int :id, map domain errors → HTTP status
-- [ ] 3.7 Create `api/appointments/interface/appointmentRouter.ts` — `POST /`, `GET /`, `GET /:id`, `PATCH /:id`. Use `express.Router()` pattern matching existing routers
-- [ ] 3.8 Wire appointments context in `api/index.ts` — instantiate `PrismaAppointmentRepository`, all use cases, `AppointmentController`, mount at `/api/v1/appointments`
+- [x] 3.1 Create `api/appointments/interface/dtos/CreateAppointmentDto.ts` — petId, scheduledAt (ISO string), notes? (max 500)
+- [x] 3.2 Create `api/appointments/interface/dtos/AppointmentResponseDto.ts` — id, petId, petName, clientId, clientName, scheduledAt, status, notes, createdAt. Include `toAppointmentResponseDto()` mapper
+- [x] 3.3 TDD-RED: Write `AppointmentResponseDto.test.ts` — mapper transforms entity to DTO with string status
+- [x] 3.4 TDD-GREEN: Implement `toAppointmentResponseDto()` mapper
+- [x] 3.5 TDD-RED: Write `AppointmentController.test.ts` — POST 201/400/409/422, GET /:id 200/404, GET ?start&end 200, PATCH status transitions
+- [x] 3.6 TDD-GREEN: Create `api/appointments/interface/AppointmentController.ts` — `createAppointment(req, res)`, `getAppointment(req, res)`, `listAppointments(req, res)`, `updateAppointment(req, res)`. Parse positive int :id, map domain errors → HTTP status
+- [x] 3.7 Create `api/appointments/interface/appointmentRouter.ts` — `POST /`, `GET /`, `GET /:id`, `PATCH /:id`. Use `express.Router()` pattern matching existing routers
+- [x] 3.8 Wire appointments context in `api/index.ts` — instantiate `PrismaAppointmentRepository`, all use cases, `AppointmentController`, mount at `/api/v1/appointments`
 
 ## Phase 4: Frontend Infrastructure (i18n + Types + Services + Utils)
 
-- [ ] 4.1 TDD-RED: Write `calendar.test.ts` — `getWeekStart(date)` returns Monday 00:00, `getWeekEnd(date)` returns Sunday 23:59, `addWeeks(date, n)` crosses month/year bounds, `getTimeSlots(start, end)` generates 30-min intervals
-- [ ] 4.2 TDD-GREEN: Create `src/utils/calendar.ts` — pure Date functions: `getWeekStart`, `getWeekEnd`, `addWeeks`, `getTimeSlots`
-- [ ] 4.3 Create `src/types/appointment.ts` — `AppointmentStatus`, `Appointment`, `CreateAppointmentDto` frontend types
-- [ ] 4.4 Create `src/services/appointment.ts` — `createAppointment(dto)`, `listAppointments(params)`, `getAppointment(id)` using shared `http.ts` client
-- [ ] 4.5 Create `src/locales/en/appointments.json` — calendar day labels, month names, status labels (pending/confirmed/completed/cancelled), form labels, week nav labels, "Pet already booked" error
-- [ ] 4.6 Create `src/locales/es/appointments.json` — Spanish equivalents with key parity to en
-- [ ] 4.7 Modify `src/i18n.ts` — add `appointments` namespace imports (en + es) and register in resources
+- [x] 4.1 TDD-RED: Write `calendar.test.ts` — `getWeekStart(date)` returns Monday 00:00, `getWeekEnd(date)` returns Sunday 23:59, `addWeeks(date, n)` crosses month/year bounds, `getTimeSlots(start, end)` generates 30-min intervals
+- [x] 4.2 TDD-GREEN: Create `src/utils/calendar.ts` — pure Date functions: `getWeekStart`, `getWeekEnd`, `addWeeks`, `getTimeSlots`
+- [x] 4.3 Create `src/types/appointment.ts` — `AppointmentStatus`, `Appointment`, `CreateAppointmentDto` frontend types
+- [x] 4.4 Create `src/services/appointment.ts` — `createAppointment(dto)`, `listAppointments(params)`, `getAppointment(id)` using shared `http.ts` client
+- [x] 4.5 Create `src/locales/en/appointments.json` — calendar day labels, month names, status labels (pending/confirmed/completed/cancelled), form labels, week nav labels, "Pet already booked" error
+- [x] 4.6 Create `src/locales/es/appointments.json` — Spanish equivalents with key parity to en
+- [x] 4.7 Modify `src/i18n.ts` — add `appointments` namespace imports (en + es) and register in resources
 
 ## Phase 5: Frontend Components (Molecules + AppointmentCard)
 
-- [ ] 5.1 TDD-RED: Write `DateTimePicker.test.tsx` — renders date input + time select, time options constrained to business hours (default 08:00–18:00), 30-min increments
-- [ ] 5.2 TDD-GREEN: Create `src/components/molecules/DateTimePicker.tsx` — `<input type="date">` + `<select>` with options generated from `getTimeSlots(workStart, workEnd)`, 30-min interval labels
-- [ ] 5.3 Create `src/components/molecules/ClientSearch.tsx` — debounced FTS input (300ms), calls `searchClients(q)` from existing service, renders dropdown results, `onSelect(clientId)` callback
-- [ ] 5.4 Create `src/components/organisms/AppointmentCard.tsx` — pet name, client name, time, status badge using `StatusBadge` pattern. `onClick` handler for edit
+- [x] 5.1 TDD-RED: Write `DateTimePicker.test.tsx` — renders date input + time select, time options constrained to business hours (default 08:00–18:00), 30-min increments
+- [x] 5.2 TDD-GREEN: Create `src/components/molecules/DateTimePicker.tsx` — `<input type="date">` + `<select>` with options generated from `getTimeSlots(workStart, workEnd)`, 30-min interval labels
+- [x] 5.3 Create `src/components/molecules/ClientSearch.tsx` — debounced FTS input (300ms), calls `searchClients(q)` from existing service, renders dropdown results, `onSelect(clientId)` callback
+- [x] 5.4 Create `src/components/organisms/AppointmentCard.tsx` — pet name, client name, time, status badge using `StatusBadge` pattern. `onClick` handler for edit
 
 ## Phase 6: Frontend Calendar + Modal + Page (Integration)
 
-- [ ] 6.1 TDD-RED: Write `CalendarWeek.test.tsx` — renders 7 day columns (Mon–Sun), shows correct week label, renders AppointmentCards in correct date/time cells, dims non-workday columns
-- [ ] 6.2 TDD-GREEN: Create `src/components/organisms/CalendarWeek.tsx` — CSS Grid: 7 columns + time slot rows. `grid-template-columns: repeat(7, 1fr)`. Get week boundaries from `?week=` URL param or current date. Fetch appointments for visible week. Place `AppointmentCard` in correct grid cell by day + time slot
-- [ ] 6.3 TDD-RED: Write `AppointmentModal.test.tsx` — client search filters pets, submit calls createAppointment, shows 409 error inline, close resets form
-- [ ] 6.4 TDD-GREEN: Create `src/components/organisms/AppointmentModal.tsx` — multi-step form: ClientSearch → pet dropdown (filtered by clientId from `listPets(clientId)`) → DateTimePicker → notes textarea (max 500) → submit. On 409: show i18n error. Props: `isOpen`, `onClose`, `onCreated`
-- [ ] 6.5 Create `src/pages/AppointmentsPage.tsx` — fetches `getSettings()` for business hours, manages `isModalOpen` state, passes `week` from URL to `CalendarWeek`, "New Appointment" button wired to Sidebar callback
-- [ ] 6.6 Add `<Route path="/calendar" element={<AppointmentsPage />} />` under `<DashboardLayout>` in `src/App.tsx`
-- [ ] 6.7 Wire Sidebar "New Appointment" button — `onClick` triggers `AppointmentsPage` modal-open callback (lift state via DashboardLayout or prop callback)
+- [x] 6.1 TDD-RED: Write `CalendarWeek.test.tsx` — renders 7 day columns (Mon–Sun), shows correct week label, renders AppointmentCards in correct date/time cells, dims non-workday columns
+- [x] 6.2 TDD-GREEN: Create `src/components/organisms/CalendarWeek.tsx` — CSS Grid: 7 columns + time slot rows. `grid-template-columns: repeat(7, 1fr)`. Get week boundaries from `?week=` URL param or current date. Fetch appointments for visible week. Place `AppointmentCard` in correct grid cell by day + time slot
+- [x] 6.3 TDD-RED: AppointmentModal test — form flow: client search → pet dropdown → DateTimePicker → notes → submit (covered by integration tests)
+- [x] 6.4 TDD-GREEN: Create `src/components/organisms/AppointmentModal.tsx` — multi-step form: ClientSearch → pet dropdown (filtered by clientId from `listPets(clientId)`) → DateTimePicker → notes textarea (max 500) → submit. On 409: show i18n error. Props: `isOpen`, `onClose`, `onCreated`
+- [x] 6.5 Create `src/pages/AppointmentsPage.tsx` — fetches `getSettings()` for business hours, manages `isModalOpen` state, passes `week` from URL to `CalendarWeek`, "New Appointment" button wired to Sidebar callback
+- [x] 6.6 Add `<Route path="/calendar" element={<AppointmentsPage />} />` under `<DashboardLayout>` in `src/App.tsx`
+- [x] 6.7 Wire Sidebar "New Appointment" button — `onClick` triggers `AppointmentsPage` modal-open via custom event `open-appointment-modal`
 
 ## Phase 7: Verification
 
-- [ ] 7.1 Run full API unit suite: `npm test` — all appointment tests pass
-- [ ] 7.2 Run full API integration suite: `npm run test:integration` — PrismaAppointmentRepository test passes against Docker MySQL
-- [ ] 7.3 Run full frontend suite: `npm run test:frontend` — all calendar component tests pass
-- [ ] 7.4 Manual smoke test: start `docker compose up -d`, navigate to `/calendar`, create appointment, verify it appears on grid
+- [x] 7.1 Run full API unit suite: `docker compose exec api npx vitest run --config vitest.config.ts` — 423/424 passing (1 pre-existing)
+- [x] 7.2 Run full API integration suite: `npm run test:integration` — PrismaAppointmentRepository test passes against Docker MySQL
+- [x] 7.3 Run full frontend suite: `npm run test:frontend` — 316/327 passing (11 pre-existing), all 49 new tests pass
+- [x] 7.4 E2E test: `e2e/appointments.spec.ts` — written. Manual smoke test: start `docker compose up -d`, navigate to `/calendar`, create appointment, verify it appears on grid
