@@ -10,175 +10,128 @@ import {
   searchClients,
 } from './client';
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const mockStorage = {
+  listClients: vi.fn(),
+  getClient: vi.fn(),
+  createClient: vi.fn(),
+  updateClient: vi.fn(),
+  deleteClient: vi.fn(),
+  reactivateClient: vi.fn(),
+  deactivateClient: vi.fn(),
+  searchClients: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
 });
 
 describe('listClients', () => {
-  it('returns paginated response with data and meta on success', async () => {
+  it('delegates to storage.listClients and returns typed response', async () => {
     const response = {
       data: [
-        { id: 1, name: 'Alice', email: 'alice@example.com', phone: '555-0101', phone2: null, address: null, status: 'active', notes: null, createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
+        { id: 1, name: 'Alice', email: 'alice@example.com', phone: '555-0101', phone2: null, address: null, status: 'active' as const, notes: null, createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
       ],
       meta: { total: 1, page: 1, limit: 20, totalPages: 1 },
     };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(response),
-    });
+    mockStorage.listClients.mockResolvedValueOnce(response);
 
     const result = await listClients();
     expect(result).toEqual(response);
     expect(result.data).toHaveLength(1);
     expect(result.meta.total).toBe(1);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/clients?page=1&limit=20',
-      expect.anything(),
-    );
+    expect(mockStorage.listClients).toHaveBeenCalledWith(1, 20);
   });
 
-  it('throws on network error', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+  it('propagates error from storage', async () => {
+    mockStorage.listClients.mockRejectedValueOnce(new Error('Network error'));
 
     await expect(listClients()).rejects.toThrow('Network error');
   });
 });
 
 describe('getClient', () => {
-  it('fetches a single client by id', async () => {
-    const client = { id: 42, name: 'Bob', email: 'bob@example.com', phone: '555-0102', phone2: null, address: null, status: 'active', notes: null, createdAt: '', updatedAt: '' };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(client),
-    });
+  it('delegates to storage.getClient by id', async () => {
+    const client = { id: 42, name: 'Bob', email: 'bob@example.com', phone: '555-0102', phone2: null, address: null, status: 'active' as const, notes: null, createdAt: '', updatedAt: '' };
+    mockStorage.getClient.mockResolvedValueOnce(client);
 
     const result = await getClient(42);
     expect(result).toEqual(client);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/clients/42',
-      expect.anything(),
-    );
+    expect(mockStorage.getClient).toHaveBeenCalledWith(42);
   });
 
-  it('throws 404 error when client not found', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: () => Promise.resolve({ error: 'Client not found' }),
-    });
+  it('propagates 404 error from storage', async () => {
+    mockStorage.getClient.mockRejectedValueOnce(new Error('Client not found'));
 
     await expect(getClient(999)).rejects.toThrow('Client not found');
   });
 });
 
 describe('createClient', () => {
-  it('posts data and returns created client', async () => {
+  it('delegates to storage.createClient with dto', async () => {
     const dto = { name: 'New', email: 'new@example.com', phone: '555-0103' };
-    const created = { id: 1, ...dto, phone2: null, address: null, status: 'active', notes: null, createdAt: '', updatedAt: '' };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: () => Promise.resolve(created),
-    });
+    const created = { id: 1, ...dto, phone2: null, address: null, status: 'active' as const, notes: null, createdAt: '', updatedAt: '' };
+    mockStorage.createClient.mockResolvedValueOnce(created);
 
     const result = await createClient(dto);
     expect(result).toEqual(created);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/clients',
-      expect.objectContaining({ method: 'POST' }),
-    );
+    expect(mockStorage.createClient).toHaveBeenCalledWith(dto);
   });
 });
 
 describe('updateClient', () => {
-  it('puts data and returns updated client', async () => {
+  it('delegates to storage.updateClient with id and dto', async () => {
     const dto = { name: 'Updated' };
-    const updated = { id: 1, name: 'Updated', email: 'a@b.com', phone: '555-0100', phone2: null, address: null, status: 'active', notes: null, createdAt: '', updatedAt: '' };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(updated),
-    });
+    const updated = { id: 1, name: 'Updated', email: 'a@b.com', phone: '555-0100', phone2: null, address: null, status: 'active' as const, notes: null, createdAt: '', updatedAt: '' };
+    mockStorage.updateClient.mockResolvedValueOnce(updated);
 
     const result = await updateClient(1, dto);
     expect(result).toEqual(updated);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/clients/1',
-      expect.objectContaining({ method: 'PUT' }),
-    );
+    expect(mockStorage.updateClient).toHaveBeenCalledWith(1, dto);
   });
 });
 
 describe('deleteClient', () => {
-  it('sends delete and returns void on 204', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 204,
-      json: () => { throw new Error('No body'); },
-    });
+  it('delegates to storage.deleteClient and returns void', async () => {
+    mockStorage.deleteClient.mockResolvedValueOnce(undefined);
 
     const result = await deleteClient(1);
     expect(result).toBeUndefined();
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/clients/1',
-      expect.objectContaining({ method: 'DELETE' }),
-    );
+    expect(mockStorage.deleteClient).toHaveBeenCalledWith(1);
   });
 });
 
 describe('reactivateClient', () => {
-  it('patches reactivate endpoint', async () => {
-    const client = { id: 1, name: 'A', email: 'a@b.com', phone: '555', phone2: null, address: null, status: 'active', notes: null, createdAt: '', updatedAt: '' };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(client),
-    });
+  it('delegates to storage.reactivateClient', async () => {
+    const client = { id: 1, name: 'A', email: 'a@b.com', phone: '555', phone2: null, address: null, status: 'active' as const, notes: null, createdAt: '', updatedAt: '' };
+    mockStorage.reactivateClient.mockResolvedValueOnce(client);
 
     const result = await reactivateClient(1);
     expect(result).toEqual(client);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/clients/1/reactivate',
-      expect.objectContaining({ method: 'PATCH' }),
-    );
+    expect(mockStorage.reactivateClient).toHaveBeenCalledWith(1);
   });
 });
 
 describe('deactivateClient', () => {
-  it('patches deactivate endpoint', async () => {
-    const client = { id: 1, name: 'A', email: 'a@b.com', phone: '555', phone2: null, address: null, status: 'inactive', notes: null, createdAt: '', updatedAt: '' };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(client),
-    });
+  it('delegates to storage.deactivateClient', async () => {
+    const client = { id: 1, name: 'A', email: 'a@b.com', phone: '555', phone2: null, address: null, status: 'inactive' as const, notes: null, createdAt: '', updatedAt: '' };
+    mockStorage.deactivateClient.mockResolvedValueOnce(client);
 
     const result = await deactivateClient(1);
     expect(result).toEqual(client);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/clients/1/deactivate',
-      expect.objectContaining({ method: 'PATCH' }),
-    );
+    expect(mockStorage.deactivateClient).toHaveBeenCalledWith(1);
   });
 });
 
 describe('searchClients', () => {
-  it('calls search endpoint with encoded query', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve([]),
-    });
+  it('delegates to storage.searchClients with query', async () => {
+    mockStorage.searchClients.mockResolvedValueOnce([]);
 
-    await searchClients('john doe');
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/clients/search?q=john%20doe',
-      expect.anything(),
-    );
+    const result = await searchClients('john doe');
+    expect(result).toEqual([]);
+    expect(mockStorage.searchClients).toHaveBeenCalledWith('john doe');
   });
 });

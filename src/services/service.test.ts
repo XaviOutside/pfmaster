@@ -1,10 +1,4 @@
-/**
- * Tests for the services API client.
- *
- * Uses vi.stubGlobal('fetch') to mock HTTP requests.
- * Verifies: URL, method, body, and response shapes for all 7 endpoints.
- */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   listServices,
   getService,
@@ -15,6 +9,24 @@ import {
   searchServices,
 } from './service';
 import type { Service, CreateServiceInput } from '@/types/service';
+
+const mockStorage = {
+  listServices: vi.fn(),
+  getService: vi.fn(),
+  createService: vi.fn(),
+  updateService: vi.fn(),
+  deleteService: vi.fn(),
+  deactivateService: vi.fn(),
+  searchServices: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 const mockService: Service = {
   id: 1,
@@ -27,92 +39,61 @@ const mockService: Service = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
-function mockFetch(status: number, body: unknown) {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(body),
-  }));
-}
-
-beforeEach(() => {
-  vi.stubGlobal('fetch', vi.fn());
-});
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
-
 describe('listServices', () => {
-  it('fetches paginated services with default params', async () => {
+  it('delegates to storage.listServices with default params', async () => {
     const response = { data: [mockService], meta: { total: 1, page: 1, limit: 20, totalPages: 1 } };
-    mockFetch(200, response);
+    mockStorage.listServices.mockResolvedValueOnce(response);
 
     const result = await listServices();
 
     expect(result).toEqual(response);
     expect(result.data).toEqual([mockService]);
     expect(result.meta.total).toBe(1);
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services?page=1&limit=20',
-      expect.objectContaining({ headers: expect.any(Object) }),
-    );
+    expect(mockStorage.listServices).toHaveBeenCalledWith(1, 20, undefined);
   });
 
   it('passes custom page and limit', async () => {
     const response = { data: [], meta: { total: 0, page: 2, limit: 10, totalPages: 0 } };
-    mockFetch(200, response);
+    mockStorage.listServices.mockResolvedValueOnce(response);
 
     await listServices(2, 10);
 
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services?page=2&limit=10',
-      expect.anything(),
-    );
+    expect(mockStorage.listServices).toHaveBeenCalledWith(2, 10, undefined);
   });
 
-  it('appends petId to URL when provided', async () => {
+  it('passes petId when provided', async () => {
     const response = { data: [mockService], meta: { total: 1, page: 1, limit: 20, totalPages: 1 } };
-    mockFetch(200, response);
+    mockStorage.listServices.mockResolvedValueOnce(response);
 
     await listServices(1, 20, 5);
 
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services?page=1&limit=20&petId=5',
-      expect.anything(),
-    );
+    expect(mockStorage.listServices).toHaveBeenCalledWith(1, 20, 5);
   });
 
-  it('does not include petId in URL when omitted', async () => {
+  it('does not include petId when omitted', async () => {
     const response = { data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } };
-    mockFetch(200, response);
+    mockStorage.listServices.mockResolvedValueOnce(response);
 
     await listServices(1, 20);
 
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services?page=1&limit=20',
-      expect.anything(),
-    );
+    expect(mockStorage.listServices).toHaveBeenCalledWith(1, 20, undefined);
   });
 });
 
 describe('getService', () => {
-  it('fetches a single service by id', async () => {
-    mockFetch(200, mockService);
+  it('delegates to storage.getService by id', async () => {
+    mockStorage.getService.mockResolvedValueOnce(mockService);
 
     const result = await getService(1);
 
     expect(result).toEqual(mockService);
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services/1',
-      expect.objectContaining({ headers: expect.any(Object) }),
-    );
+    expect(mockStorage.getService).toHaveBeenCalledWith(1);
   });
 });
 
 describe('createService', () => {
-  it('sends POST with body and returns created service', async () => {
-    mockFetch(201, { ...mockService, id: 3 });
+  it('delegates to storage.createService with input', async () => {
+    mockStorage.createService.mockResolvedValueOnce({ ...mockService, id: 3 });
 
     const input: CreateServiceInput = {
       name: 'Nail Trim',
@@ -122,82 +103,58 @@ describe('createService', () => {
     const result = await createService(input);
 
     expect(result.id).toBe(3);
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services',
-      expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify(input),
-      }),
-    );
+    expect(mockStorage.createService).toHaveBeenCalledWith(input);
   });
 });
 
 describe('updateService', () => {
-  it('sends PUT with body and returns updated service', async () => {
-    mockFetch(200, { ...mockService, name: 'Deluxe' });
+  it('delegates to storage.updateService with id and input', async () => {
+    mockStorage.updateService.mockResolvedValueOnce({ ...mockService, name: 'Deluxe' });
 
     const result = await updateService(1, { name: 'Deluxe', price: 75 });
 
     expect(result.name).toBe('Deluxe');
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services/1',
-      expect.objectContaining({
-        method: 'PUT',
-        body: JSON.stringify({ name: 'Deluxe', price: 75 }),
-      }),
-    );
+    expect(mockStorage.updateService).toHaveBeenCalledWith(1, { name: 'Deluxe', price: 75 });
   });
 });
 
 describe('deactivateService', () => {
-  it('sends PATCH and returns deactivated service', async () => {
-    mockFetch(200, { ...mockService, status: 'inactive' });
+  it('delegates to storage.deactivateService', async () => {
+    mockStorage.deactivateService.mockResolvedValueOnce({ ...mockService, status: 'inactive' });
 
     const result = await deactivateService(1);
 
     expect(result.status).toBe('inactive');
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services/1/deactivate',
-      expect.objectContaining({ method: 'PATCH' }),
-    );
+    expect(mockStorage.deactivateService).toHaveBeenCalledWith(1);
   });
 });
 
 describe('deleteService', () => {
-  it('sends DELETE and returns void on 204', async () => {
-    mockFetch(204, undefined);
+  it('delegates to storage.deleteService and returns void', async () => {
+    mockStorage.deleteService.mockResolvedValueOnce(undefined);
 
     const result = await deleteService(1);
 
     expect(result).toBeUndefined();
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services/1',
-      expect.objectContaining({ method: 'DELETE' }),
-    );
+    expect(mockStorage.deleteService).toHaveBeenCalledWith(1);
   });
 });
 
 describe('searchServices', () => {
-  it('sends GET with encoded query and returns results', async () => {
-    mockFetch(200, [mockService]);
+  it('delegates to storage.searchServices with query', async () => {
+    mockStorage.searchServices.mockResolvedValueOnce([mockService]);
 
     const result = await searchServices('groom');
 
     expect(result).toEqual([mockService]);
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services/search?q=groom',
-      expect.objectContaining({ headers: expect.any(Object) }),
-    );
+    expect(mockStorage.searchServices).toHaveBeenCalledWith('groom');
   });
 
-  it('encodes special characters in query', async () => {
-    mockFetch(200, []);
+  it('passes special character query as-is', async () => {
+    mockStorage.searchServices.mockResolvedValueOnce([]);
 
-    await searchServices('cut & style');
-
-    expect(fetch).toHaveBeenCalledWith(
-      '/api/v1/services/search?q=cut%20%26%20style',
-      expect.objectContaining({ headers: expect.any(Object) }),
-    );
+    const result = await searchServices('cut & style');
+    expect(result).toEqual([]);
+    expect(mockStorage.searchServices).toHaveBeenCalledWith('cut & style');
   });
 });

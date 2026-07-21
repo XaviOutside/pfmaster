@@ -16,20 +16,21 @@ const mockClient = {
   updatedAt: '2024-01-01T00:00:00Z',
 };
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const mockStorage = {
+  getClient: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
 });
 
 describe('useClient', () => {
   it('fetches client by id', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(mockClient),
-    });
+    mockStorage.getClient.mockResolvedValueOnce(mockClient);
 
     const { result } = renderHook(() => useClient(42));
 
@@ -40,11 +41,7 @@ describe('useClient', () => {
   });
 
   it('handles 404 (client not found)', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: () => Promise.resolve({ error: 'Client not found' }),
-    });
+    mockStorage.getClient.mockRejectedValueOnce(new Error('Client not found'));
 
     const { result } = renderHook(() => useClient(999));
 
@@ -63,17 +60,9 @@ describe('useClient', () => {
   });
 
   it('re-fetches when id changes', async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockClient),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ ...mockClient, id: 43, name: 'Bob' }),
-      });
+    mockStorage.getClient
+      .mockResolvedValueOnce(mockClient)
+      .mockResolvedValueOnce({ ...mockClient, id: 43, name: 'Bob' });
 
     const { result, rerender } = renderHook(
       (id: number | undefined) => useClient(id),
