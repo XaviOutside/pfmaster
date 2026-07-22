@@ -85,6 +85,12 @@ describe('LandingPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/clients');
   });
 
+  it('renders LanguageSwitcher in the hero section', () => {
+    renderLanding();
+    const langButton = screen.getByRole('button', { name: 'language.switchAria' });
+    expect(langButton).toBeInTheDocument();
+  });
+
   it('shows disabled "Log In" button', () => {
     renderLanding();
     const loginButton = screen.getByRole('button', { name: /hero.demo/i });
