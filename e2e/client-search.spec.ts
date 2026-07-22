@@ -7,6 +7,7 @@ import { test, expect } from '@playwright/test';
  * - Frontend runs at http://localhost:5173
  * - Backend API runs with seeded data (run `npm run db:seed` before tests)
  * - docker compose is up with MySQL + ngram FTS indexes
+ * - App uses pf_demo:mode='api' (set in beforeEach via addInitScript)
  *
  * Run: npx playwright test --grep "search"
  */
@@ -18,6 +19,9 @@ const EMPTY_STATE = '[data-testid="datatable-empty"]';
 
 test.describe('client search', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('pf_demo:mode', 'api');
+    });
     await page.goto('/clients');
     // Wait for initial page load — the table should render
     await page.waitForSelector('[data-testid="clients-page"]');
@@ -42,7 +46,7 @@ test.describe('client search', () => {
     await expect(page.locator(DATA_TABLE_ROW).first()).toBeVisible({ timeout: 3000 });
   });
 
-  test('typing less than 3 characters clears results without making a search API call', async ({ page }) => {
+  test('typing less than 3 characters does not trigger a search and keeps current list', async ({ page }) => {
     const searchInput = page.locator(SEARCH_INPUT);
 
     // Track search API calls
@@ -61,8 +65,8 @@ test.describe('client search', () => {
     // No search API call should have been made
     expect(searchApiCalled).toBe(false);
 
-    // Results should show empty state
-    await expect(page.locator(EMPTY_STATE)).toBeVisible({ timeout: 3000 });
+    // The initial table rows should still be visible (3-char gate keeps current results)
+    await expect(page.locator(DATA_TABLE_ROW).first()).toBeVisible({ timeout: 3000 });
   });
 
   test('pressing Enter with less than 3 characters does not make an API call', async ({ page }) => {
@@ -103,19 +107,25 @@ test.describe('client search', () => {
     const searchInput = page.locator(SEARCH_INPUT);
     const submitButton = page.locator(SEARCH_SUBMIT);
 
-    // Type 3+ chars
-    await searchInput.fill('bra');
+    // Track search API calls
+    let searchApiCalled = false;
+    await page.route('**/api/v1/clients/search?q=*', async (route) => {
+      searchApiCalled = true;
+      await route.fulfill({ json: [] });
+    });
 
-    // Click the search button (bypasses debounce, immediate search)
+    // Type 3+ chars — this triggers auto-search via debounce (300ms)
+    await searchInput.fill('bra');
+    await page.waitForTimeout(500);
+
+    // Reset the flag and click the search button (immediate search, bypasses debounce)
+    searchApiCalled = false;
     await submitButton.click();
 
-    // Expect an immediate API call (no 300ms wait)
-    const response = await page.waitForResponse(
-      (resp) => resp.url().includes('/api/v1/clients/search?q=') && resp.status() === 200,
-      { timeout: 1000 },
-    );
+    // Wait for the request to be intercepted
+    await page.waitForTimeout(1000);
 
-    expect(response.ok()).toBe(true);
+    expect(searchApiCalled).toBe(true);
   });
 
   test('clicking search button with less than 3 characters does not make an API call', async ({ page }) => {

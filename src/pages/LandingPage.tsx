@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStorageMode } from '@/storage/useStorageMode';
 
@@ -34,13 +33,17 @@ const HERO_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCP-2mYS7
    Landing Page — demo mode entry point
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
-  const navigate = useNavigate();
   const { t } = useTranslation('landing');
   const { setMode } = useStorageMode();
 
   function handleTryDemo() {
     setMode('demo');
-    navigate('/clients');
+    window.location.href = '/clients';
+  }
+
+  function handleTryApi() {
+    setMode('api');
+    window.location.href = '/clients';
   }
 
   return (
@@ -63,10 +66,9 @@ export default function LandingPage() {
               {t('hero.cta')}
             </button>
             <button
-              disabled
-              className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-full bg-secondary-container px-8 py-3 text-label-md font-semibold text-on-secondary-container opacity-50 sm:w-auto"
+              onClick={handleTryApi}
+              className="inline-flex w-full items-center justify-center rounded-full bg-secondary-container px-8 py-3 text-label-md font-semibold text-on-secondary-container transition-colors hover:bg-secondary-fixed sm:w-auto"
               type="button"
-              title={t('hero.loginComingSoon')}
             >
               {t('hero.demo')}
             </button>
