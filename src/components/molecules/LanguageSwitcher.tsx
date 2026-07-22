@@ -1,5 +1,11 @@
 import { useTranslation } from 'react-i18next';
 
+/** Flag emoji for each supported locale. */
+const FLAG: Record<string, string> = {
+  en: '🇬🇧',
+  es: '🇪🇸',
+};
+
 export default function LanguageSwitcher({ className }: { className?: string }) {
   const { i18n, t } = useTranslation('common');
 
@@ -8,16 +14,19 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
     i18n.changeLanguage(next);
   }
 
-  const currentLabel = i18n.language === 'es' ? t('language.en') : t('language.es');
+  // Show flag of the OTHER language — indicates what you switch TO
+  const nextLang = i18n.language === 'es' ? 'en' : 'es';
+  const flag = FLAG[nextLang] ?? '🌐';
+  const label = i18n.language === 'es' ? t('language.en') : t('language.es');
 
   return (
     <button
       onClick={toggleLanguage}
-      className={`flex w-full items-center gap-3 rounded-lg px-4 py-2 font-label text-label-sm text-on-surface-variant transition-colors hover:bg-secondary-container ${className ?? ''}`}
-      aria-label={t('language.switchAria', { lang: currentLabel })}
+      className={className ?? 'flex w-full items-center gap-3 rounded-lg px-4 py-2 font-label text-label-sm text-on-surface-variant transition-colors hover:bg-secondary-container'}
+      aria-label={t('language.switchAria', { lang: label })}
+      title={label}
     >
-      <span className="material-symbols-outlined text-sm">language</span>
-      {currentLabel}
+      <span className="text-lg leading-none" aria-hidden="true">{flag}</span>
     </button>
   );
 }
