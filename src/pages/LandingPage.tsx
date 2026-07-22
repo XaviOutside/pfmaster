@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStorageMode } from '@/storage/useStorageMode';
 import LanguageSwitcher from '@/components/molecules/LanguageSwitcher';
@@ -136,8 +137,8 @@ export default function LandingPage() {
           <p className="text-body-md text-on-surface-variant">{t('footer.copyright')}</p>
         </div>
         <div className="flex flex-col gap-4 text-center md:flex-row md:text-left">
-          <a className="text-body-md text-on-surface-variant opacity-80 transition-opacity hover:underline hover:opacity-100" href="#">{t('footer.privacy')}</a>
-          <a className="text-body-md text-on-surface-variant opacity-80 transition-opacity hover:underline hover:opacity-100" href="#">{t('footer.terms')}</a>
+          <NavLink to="/privacy" className="text-body-md text-on-surface-variant opacity-80 transition-opacity hover:underline hover:opacity-100">{t('footer.privacy')}</NavLink>
+          <NavLink to="/terms" className="text-body-md text-on-surface-variant opacity-80 transition-opacity hover:underline hover:opacity-100">{t('footer.terms')}</NavLink>
           <a className="text-body-md text-on-surface-variant opacity-80 transition-opacity hover:underline hover:opacity-100" href="#">{t('footer.contact')}</a>
         </div>
       </footer>

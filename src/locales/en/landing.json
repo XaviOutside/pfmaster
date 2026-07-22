@@ -1,7 +1,7 @@
 {
   "hero": {
     "title": "Manage your grooming salon with ease.",
-    "subtitle": "Pawsitive Manager helps you streamline appointments, track customer preferences, and provide the best care for every pet.",
+    "subtitle": "Peluclic helps you streamline appointments, track customer preferences, and provide the best care for every pet.",
     "cta": "Try Demo",
     "demo": "Log In",
     "loginComingSoon": "Account login coming in a future version. Try the demo to explore all features with sample data."
@@ -26,8 +26,8 @@
     }
   },
   "footer": {
-    "brand": "Pawsitive Manager",
-    "copyright": "© 2024 Pawsitive Grooming Solutions. All paws reserved.",
+    "brand": "Peluclic",
+    "copyright": "© 2026 Peluclic Grooming Solutions. All paws reserved.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "contact": "Contact Us"
@@ -36,5 +36,43 @@
     "title": "Coming Soon",
     "message": "Registration is not yet available. Please check back later.",
     "backHome": "Back to home"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "section1": {
+      "title": "1. Demo Version Disclaimer",
+      "content": "The demo version of Peluclic stores all data locally in your browser using localStorage. No data is transmitted to or stored on any external server. The author of this application is not responsible for any data entered, stored, or lost while using the demo version. By using the demo, you acknowledge that your data resides solely on your device and may be lost if you clear your browser storage."
+    },
+    "section2": {
+      "title": "2. Prohibited Conduct",
+      "content": "Any attempt to steal, scrape, intercept, or exfiltrate data from this application — including but not limited to client information, pet records, appointment data, and service configurations — is strictly prohibited. Any attempt to manipulate, falsify, or impersonate the Peluclic portal, its branding, or its image for fraudulent, deceptive, or unauthorized purposes will be prosecuted to the fullest extent of the law."
+    },
+    "section3": {
+      "title": "3. Intellectual Property",
+      "content": "All content, design, code, and branding associated with Peluclic are the intellectual property of their respective owners. Unauthorized reproduction, distribution, or use of any part of this application without explicit permission is prohibited."
+    },
+    "section4": {
+      "title": "4. Contact",
+      "content": "If you have any questions about this Privacy Policy or the use of your data, please contact the author through the official channels."
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "section1": {
+      "title": "1. Acceptance of Terms",
+      "content": "By accessing and using Peluclic, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you must discontinue use of the application immediately. These terms may be updated at any time without prior notice. Continued use of the application after any changes constitutes acceptance of the new terms."
+    },
+    "section2": {
+      "title": "2. Use of the Service",
+      "content": "Peluclic is provided as a tool for managing pet grooming businesses. You agree to use the application only for lawful purposes and in accordance with these terms. You are responsible for maintaining the confidentiality of any data you enter and for all activities that occur under your usage. The service is provided 'as is' without any warranty, express or implied."
+    },
+    "section3": {
+      "title": "3. Limitation of Liability",
+      "content": "In no event shall the author of Peluclic be liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use or inability to use this application. This includes, but is not limited to, loss of data, loss of business, or business interruption, even if advised of the possibility of such damages."
+    },
+    "section4": {
+      "title": "4. Termination",
+      "content": "The author reserves the right to terminate or suspend access to the application at any time, without prior notice, for any reason whatsoever. Upon termination, your right to use the application will cease immediately. All provisions of these terms which by their nature should survive termination shall survive."
+    }
   }
 }
