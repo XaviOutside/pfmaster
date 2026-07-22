@@ -12,6 +12,8 @@ import Button from '@/components/atoms/Button';
 import Spinner from '@/components/atoms/Spinner';
 import { getSettings, updateSettings, uploadLogo, HttpError } from '@/services/settings';
 import type { CompanySettings, Lang } from '@/types/settings';
+import { LANG_MAP } from '@/types/settings';
+import i18n from '@/i18n';
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -138,6 +140,13 @@ export default function SettingsPage() {
         setLogoUrl(updated.logoUrl);
         setLogoFile(null);
       }
+
+      // Apply the language change immediately (not just on next app load)
+      const langCode = LANG_MAP[defaultLang];
+      if (langCode && langCode !== i18n.language) {
+        await i18n.changeLanguage(langCode);
+      }
+
       setFeedback({ type: 'success', message: t('saveSuccess') });
     } catch (err) {
       if (err instanceof HttpError && err.fieldErrors) {

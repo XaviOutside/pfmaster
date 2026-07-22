@@ -22,20 +22,25 @@ const mockClient = {
   updatedAt: '2024-01-01T00:00:00Z',
 };
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const mockStorage = {
+  createClient: vi.fn(),
+  updateClient: vi.fn(),
+  deleteClient: vi.fn(),
+  reactivateClient: vi.fn(),
+  deactivateClient: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
 });
 
 describe('useCreateClient', () => {
   it('creates a client and returns it', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: () => Promise.resolve(mockClient),
-    });
+    mockStorage.createClient.mockResolvedValueOnce(mockClient);
 
     const { result } = renderHook(() => useCreateClient());
 
@@ -54,15 +59,9 @@ describe('useCreateClient', () => {
   });
 
   it('handles create failure', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 422,
-      json: () =>
-        Promise.resolve({
-          error: 'Email already exists',
-          fieldErrors: { email: 'Email already in use' },
-        }),
-    });
+    const err = new Error('Email already exists');
+    (err as any).fieldErrors = { email: 'Email already in use' };
+    mockStorage.createClient.mockRejectedValueOnce(err);
 
     const { result } = renderHook(() => useCreateClient());
 
@@ -84,11 +83,7 @@ describe('useCreateClient', () => {
 
 describe('useDeactivateClient', () => {
   it('deactivates a client', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ ...mockClient, status: 'inactive' }),
-    });
+    mockStorage.deactivateClient.mockResolvedValueOnce({ ...mockClient, status: 'inactive' as const });
 
     const { result } = renderHook(() => useDeactivateClient());
 
@@ -103,11 +98,7 @@ describe('useDeactivateClient', () => {
 
 describe('useReactivateClient', () => {
   it('reactivates a client', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ ...mockClient, status: 'active' }),
-    });
+    mockStorage.reactivateClient.mockResolvedValueOnce({ ...mockClient, status: 'active' as const });
 
     const { result } = renderHook(() => useReactivateClient());
 
@@ -122,11 +113,7 @@ describe('useReactivateClient', () => {
 
 describe('useDeleteClient', () => {
   it('deletes a client', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 204,
-      json: () => { throw new Error('No body'); },
-    });
+    mockStorage.deleteClient.mockResolvedValueOnce(undefined);
 
     const { result } = renderHook(() => useDeleteClient());
 
@@ -141,11 +128,7 @@ describe('useDeleteClient', () => {
 
 describe('useUpdateClient', () => {
   it('updates a client', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ ...mockClient, name: 'Updated Alice' }),
-    });
+    mockStorage.updateClient.mockResolvedValueOnce({ ...mockClient, name: 'Updated Alice' });
 
     const { result } = renderHook(() => useUpdateClient());
 

@@ -22,20 +22,24 @@ const samplePet = {
   updatedAt: '2025-01-01T00:00:00.000Z',
 };
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const mockStorage = {
+  createPet: vi.fn(),
+  updatePet: vi.fn(),
+  deletePet: vi.fn(),
+  deactivatePet: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
 });
 
 describe('useCreatePet', () => {
   it('creates a pet and returns it', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: () => Promise.resolve(samplePet),
-    });
+    mockStorage.createPet.mockResolvedValueOnce(samplePet);
 
     const { result } = renderHook(() => useCreatePet());
 
@@ -55,15 +59,9 @@ describe('useCreatePet', () => {
   });
 
   it('handles create failure', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 422,
-      json: () =>
-        Promise.resolve({
-          error: 'Invalid client',
-          fieldErrors: { clientId: 'Client does not exist or is inactive' },
-        }),
-    });
+    const err = new Error('Invalid client');
+    (err as any).fieldErrors = { clientId: 'Client does not exist or is inactive' };
+    mockStorage.createPet.mockRejectedValueOnce(err);
 
     const { result } = renderHook(() => useCreatePet());
 
@@ -86,11 +84,7 @@ describe('useCreatePet', () => {
 
 describe('useUpdatePet', () => {
   it('updates a pet', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ ...samplePet, name: 'Maximus' }),
-    });
+    mockStorage.updatePet.mockResolvedValueOnce({ ...samplePet, name: 'Maximus' });
 
     const { result } = renderHook(() => useUpdatePet());
 
@@ -107,13 +101,7 @@ describe('useUpdatePet', () => {
 
 describe('useDeletePet', () => {
   it('deletes a pet', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 204,
-      json: () => {
-        throw new Error('No body');
-      },
-    });
+    mockStorage.deletePet.mockResolvedValueOnce(undefined);
 
     const { result } = renderHook(() => useDeletePet());
 
@@ -128,11 +116,7 @@ describe('useDeletePet', () => {
 
 describe('useDeactivatePet', () => {
   it('deactivates a pet', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ ...samplePet, status: 'inactive' }),
-    });
+    mockStorage.deactivatePet.mockResolvedValueOnce({ ...samplePet, status: 'inactive' as const });
 
     const { result } = renderHook(() => useDeactivatePet());
 

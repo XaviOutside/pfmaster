@@ -22,20 +22,22 @@ const mockPets = [
   { ...samplePet, id: 2, name: 'Bella', breed: 'Labrador' },
 ];
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const mockStorage = {
+  listPets: vi.fn(),
+  searchPets: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
 });
 
 describe('usePets', () => {
   it('starts in loading state with pagination defaults', () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }),
-    });
+    mockStorage.listPets.mockResolvedValueOnce({ data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } });
 
     const { result } = renderHook(() => usePets());
     expect(result.current.isLoading).toBe(true);
@@ -46,11 +48,7 @@ describe('usePets', () => {
   });
 
   it('fetches and returns pets on mount with metadata', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } }),
-    });
+    mockStorage.listPets.mockResolvedValueOnce({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } });
 
     const { result } = renderHook(() => usePets());
 
@@ -64,11 +62,7 @@ describe('usePets', () => {
   });
 
   it('handles fetch failure', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: () => Promise.resolve({ error: 'Server error' }),
-    });
+    mockStorage.listPets.mockRejectedValueOnce(new Error('Server error'));
 
     const { result } = renderHook(() => usePets());
 
@@ -79,16 +73,8 @@ describe('usePets', () => {
   });
 
   it('goToPage triggers a new fetch with the correct page param', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } }),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [samplePet], meta: { total: 1, page: 3, limit: 20, totalPages: 1 } }),
-    });
+    mockStorage.listPets.mockResolvedValueOnce({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } });
+    mockStorage.listPets.mockResolvedValueOnce({ data: [samplePet], meta: { total: 1, page: 3, limit: 20, totalPages: 1 } });
 
     const { result } = renderHook(() => usePets());
 
@@ -100,23 +86,12 @@ describe('usePets', () => {
 
     await waitFor(() => expect(result.current.page).toBe(3));
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets?page=3&limit=20',
-      expect.anything(),
-    );
+    expect(mockStorage.listPets).toHaveBeenCalledWith(3, 20, undefined);
   });
 
   it('setClientId resets to page 1 and fetches with clientId', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } }),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [samplePet], meta: { total: 1, page: 1, limit: 20, totalPages: 1 } }),
-    });
+    mockStorage.listPets.mockResolvedValueOnce({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } });
+    mockStorage.listPets.mockResolvedValueOnce({ data: [samplePet], meta: { total: 1, page: 1, limit: 20, totalPages: 1 } });
 
     const { result } = renderHook(() => usePets());
 
@@ -129,23 +104,12 @@ describe('usePets', () => {
     await waitFor(() => expect(result.current.clientId).toBe(10));
     expect(result.current.page).toBe(1);
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets?page=1&limit=20&clientId=10',
-      expect.anything(),
-    );
+    expect(mockStorage.listPets).toHaveBeenCalledWith(1, 20, 10);
   });
 
   it('refresh re-fetches current page', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } }),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [samplePet], meta: { total: 1, page: 1, limit: 20, totalPages: 1 } }),
-    });
+    mockStorage.listPets.mockResolvedValueOnce({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } });
+    mockStorage.listPets.mockResolvedValueOnce({ data: [samplePet], meta: { total: 1, page: 1, limit: 20, totalPages: 1 } });
 
     const { result } = renderHook(() => usePets());
 
@@ -157,10 +121,7 @@ describe('usePets', () => {
 
     await waitFor(() => expect(result.current.pets).toEqual([samplePet]));
 
-    expect(mockFetch).toHaveBeenCalledTimes(2);
-    expect(mockFetch).toHaveBeenLastCalledWith(
-      '/api/v1/pets?page=1&limit=20',
-      expect.anything(),
-    );
+    expect(mockStorage.listPets).toHaveBeenCalledTimes(2);
+    expect(mockStorage.listPets).toHaveBeenLastCalledWith(1, 20, undefined);
   });
 });

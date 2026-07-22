@@ -9,11 +9,22 @@ import {
   searchPets,
 } from './pet';
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const mockStorage = {
+  listPets: vi.fn(),
+  getPet: vi.fn(),
+  createPet: vi.fn(),
+  updatePet: vi.fn(),
+  deletePet: vi.fn(),
+  deactivatePet: vi.fn(),
+  searchPets: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
 });
 
 const samplePet = {
@@ -32,174 +43,108 @@ const samplePet = {
 };
 
 describe('listPets', () => {
-  it('returns paginated response with data and meta on success', async () => {
+  it('delegates to storage.listPets and returns typed response', async () => {
     const response = {
       data: [samplePet],
       meta: { total: 1, page: 1, limit: 20, totalPages: 1 },
     };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(response),
-    });
+    mockStorage.listPets.mockResolvedValueOnce(response);
 
     const result = await listPets();
     expect(result).toEqual(response);
     expect(result.data).toEqual([samplePet]);
     expect(result.meta.total).toBe(1);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets?page=1&limit=20',
-      expect.anything(),
-    );
+    expect(mockStorage.listPets).toHaveBeenCalledWith(1, 20, undefined);
   });
 
-  it('passes custom page and limit as query params', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [], meta: { total: 0, page: 2, limit: 10, totalPages: 0 } }),
-    });
+  it('passes custom page and limit', async () => {
+    mockStorage.listPets.mockResolvedValueOnce({ data: [], meta: { total: 0, page: 2, limit: 10, totalPages: 0 } });
 
     await listPets(2, 10);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets?page=2&limit=10',
-      expect.anything(),
-    );
+    expect(mockStorage.listPets).toHaveBeenCalledWith(2, 10, undefined);
   });
 
-  it('adds clientId query param when provided', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }),
-    });
+  it('passes clientId when provided', async () => {
+    mockStorage.listPets.mockResolvedValueOnce({ data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } });
 
     await listPets(1, 20, 10);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets?page=1&limit=20&clientId=10',
-      expect.anything(),
-    );
+    expect(mockStorage.listPets).toHaveBeenCalledWith(1, 20, 10);
   });
 
-  it('throws on network error', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+  it('propagates error from storage', async () => {
+    mockStorage.listPets.mockRejectedValueOnce(new Error('Network error'));
 
     await expect(listPets()).rejects.toThrow('Network error');
   });
 });
 
 describe('getPet', () => {
-  it('fetches a single pet by id', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(samplePet),
-    });
+  it('delegates to storage.getPet by id', async () => {
+    mockStorage.getPet.mockResolvedValueOnce(samplePet);
 
     const result = await getPet(1);
     expect(result).toEqual(samplePet);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets/1',
-      expect.anything(),
-    );
+    expect(mockStorage.getPet).toHaveBeenCalledWith(1);
   });
 
-  it('throws 404 error when pet not found', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: () => Promise.resolve({ error: 'Pet not found' }),
-    });
+  it('propagates 404 error from storage', async () => {
+    mockStorage.getPet.mockRejectedValueOnce(new Error('Pet not found'));
 
     await expect(getPet(999)).rejects.toThrow('Pet not found');
   });
 });
 
 describe('createPet', () => {
-  it('posts data and returns created pet', async () => {
+  it('delegates to storage.createPet with input', async () => {
     const input = { clientId: 10, name: 'Bella', species: 'Dog', breed: 'Labrador' };
-    const created = { id: 2, ...input, sex: 'unknown', dateOfBirth: null, weightKg: null, notes: null, status: 'active', createdAt: '', updatedAt: '' };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: () => Promise.resolve(created),
-    });
+    const created = { id: 2, ...input, sex: 'unknown' as const, dateOfBirth: null, weightKg: null, notes: null, status: 'active' as const, createdAt: '', updatedAt: '' };
+    mockStorage.createPet.mockResolvedValueOnce(created);
 
     const result = await createPet(input);
     expect(result).toEqual(created);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets',
-      expect.objectContaining({ method: 'POST' }),
-    );
+    expect(mockStorage.createPet).toHaveBeenCalledWith(input);
   });
 });
 
 describe('updatePet', () => {
-  it('puts data and returns updated pet', async () => {
+  it('delegates to storage.updatePet with id and input', async () => {
     const input = { name: 'Maximus' };
     const updated = { ...samplePet, name: 'Maximus' };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(updated),
-    });
+    mockStorage.updatePet.mockResolvedValueOnce(updated);
 
     const result = await updatePet(1, input);
     expect(result).toEqual(updated);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets/1',
-      expect.objectContaining({ method: 'PUT' }),
-    );
+    expect(mockStorage.updatePet).toHaveBeenCalledWith(1, input);
   });
 });
 
 describe('deletePet', () => {
-  it('sends delete and returns void on 204', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 204,
-      json: () => { throw new Error('No body'); },
-    });
+  it('delegates to storage.deletePet and returns void', async () => {
+    mockStorage.deletePet.mockResolvedValueOnce(undefined);
 
     const result = await deletePet(1);
     expect(result).toBeUndefined();
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets/1',
-      expect.objectContaining({ method: 'DELETE' }),
-    );
+    expect(mockStorage.deletePet).toHaveBeenCalledWith(1);
   });
 });
 
 describe('deactivatePet', () => {
-  it('patches deactivate endpoint', async () => {
+  it('delegates to storage.deactivatePet', async () => {
     const deactivated = { ...samplePet, status: 'inactive' as const };
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(deactivated),
-    });
+    mockStorage.deactivatePet.mockResolvedValueOnce(deactivated);
 
     const result = await deactivatePet(1);
     expect(result).toEqual(deactivated);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets/1/deactivate',
-      expect.objectContaining({ method: 'PATCH' }),
-    );
+    expect(mockStorage.deactivatePet).toHaveBeenCalledWith(1);
   });
 });
 
 describe('searchPets', () => {
-  it('calls search endpoint with encoded query', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve([]),
-    });
+  it('delegates to storage.searchPets with query', async () => {
+    mockStorage.searchPets.mockResolvedValueOnce([]);
 
-    await searchPets('golden retriever');
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/pets/search?q=golden%20retriever',
-      expect.anything(),
-    );
+    const result = await searchPets('golden retriever');
+    expect(result).toEqual([]);
+    expect(mockStorage.searchPets).toHaveBeenCalledWith('golden retriever');
   });
 });

@@ -1,38 +1,35 @@
-import { http, HttpError } from '@/services/http';
+import { getStorage } from '@/storage/storageContext';
+import { HttpError } from '@/services/http';
 import type { CompanySettings, UpdateSettingsDto } from '@/types/settings';
 
 /**
- * Typed fetch wrappers for /api/v1/settings endpoints.
+ * Typed wrappers that delegate to the active storage implementation.
  * Singleton resource — no ID in the URL.
  */
 
 /** Fetch current company settings. */
 export function getSettings(): Promise<CompanySettings> {
-  return http<CompanySettings>('/settings');
+  const storage = getStorage();
+  return storage.getSettings();
 }
 
 /** Update company settings. All fields required. */
 export function updateSettings(data: UpdateSettingsDto): Promise<CompanySettings> {
-  return http<CompanySettings>('/settings', {
-    method: 'PUT',
-    body: data,
-  });
+  const storage = getStorage();
+  return storage.updateSettings(data);
 }
 
-/** Upload company logo (PNG, max 1MB). Returns updated settings with logoUrl. */
+/**
+ * Upload company logo (PNG, max 1MB).
+ *
+ * This function uses direct fetch (not the storage abstraction) because
+ * localStorage cannot store binary files and the upload endpoint requires
+ * multipart/form-data which the http() wrapper does not support.
+ * In demo mode this function is a no-op proxy.
+ */
 export async function uploadLogo(file: File): Promise<CompanySettings> {
-  const formData = new FormData();
-  formData.append('logo', file);
-  const response = await fetch('/api/v1/settings/logo', {
-    method: 'POST',
-    body: formData,
-    // Do NOT set Content-Type — browser sets it with multipart boundary
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Upload failed' }));
-    throw new HttpError(response.status, error.error ?? 'Upload failed');
-  }
-  return response.json();
+  const storage = getStorage();
+  return storage.uploadLogo(file);
 }
 
 export { HttpError };

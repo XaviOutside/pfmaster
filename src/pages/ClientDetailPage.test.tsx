@@ -50,8 +50,18 @@ const mockPets = [
   },
 ];
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const emptyPetList = { data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } };
+const emptyServiceList = { data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } };
+
+const mockStorage = {
+  getClient: vi.fn(),
+  listPets: vi.fn(),
+  listServices: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
 
 function renderPage(id = '1') {
   return render(
@@ -64,32 +74,14 @@ function renderPage(id = '1') {
 }
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
 });
 
 describe('ClientDetailPage — embedded pet list', () => {
   it('renders pet list section when pets are loaded', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(mockClient),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } }),
-    });
-    // Per-pet service list calls
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }),
-    });
+    mockStorage.getClient.mockResolvedValueOnce(mockClient);
+    mockStorage.listPets.mockResolvedValueOnce({ data: mockPets, meta: { total: 2, page: 1, limit: 20, totalPages: 1 } });
+    mockStorage.listServices.mockResolvedValue(emptyServiceList);
 
     renderPage();
 
@@ -102,21 +94,12 @@ describe('ClientDetailPage — embedded pet list', () => {
     });
 
     expect(screen.getByText('Bella')).toBeInTheDocument();
-    // Pets section heading — i18n key
     expect(screen.getByText('detail.pets')).toBeInTheDocument();
   });
 
   it('shows empty pet list when client has no pets', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(mockClient),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }),
-    });
+    mockStorage.getClient.mockResolvedValueOnce(mockClient);
+    mockStorage.listPets.mockResolvedValueOnce(emptyPetList);
 
     renderPage();
 
@@ -125,22 +108,13 @@ describe('ClientDetailPage — embedded pet list', () => {
     });
 
     await waitFor(() => {
-      // PetTable renders an empty message (was i18n'd in PR 2)
       expect(screen.getByText('empty.noPets')).toBeInTheDocument();
     });
   });
 
   it('has an Add Pet button', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(mockClient),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }),
-    });
+    mockStorage.getClient.mockResolvedValueOnce(mockClient);
+    mockStorage.listPets.mockResolvedValueOnce(emptyPetList);
 
     renderPage();
 
@@ -156,16 +130,8 @@ describe('ClientDetailPage — embedded pet list', () => {
   });
 
   it('still displays client card with edit and deactivate buttons', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(mockClient),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } }),
-    });
+    mockStorage.getClient.mockResolvedValueOnce(mockClient);
+    mockStorage.listPets.mockResolvedValueOnce(emptyPetList);
 
     renderPage();
 
@@ -173,7 +139,6 @@ describe('ClientDetailPage — embedded pet list', () => {
       expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
     });
 
-    // ClientDetailCard was i18n'd in PR 2 — buttons use common namespace keys
     expect(screen.getByRole('button', { name: 'actions.edit' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'actions.deactivate' })).toBeInTheDocument();
   });

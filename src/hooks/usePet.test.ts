@@ -17,20 +17,21 @@ const samplePet = {
   updatedAt: '2025-01-01T00:00:00.000Z',
 };
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const mockStorage = {
+  getPet: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
 });
 
 describe('usePet', () => {
   it('fetches pet by id', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(samplePet),
-    });
+    mockStorage.getPet.mockResolvedValueOnce(samplePet);
 
     const { result } = renderHook(() => usePet(1));
 
@@ -41,11 +42,7 @@ describe('usePet', () => {
   });
 
   it('handles 404 (pet not found)', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: () => Promise.resolve({ error: 'Pet not found' }),
-    });
+    mockStorage.getPet.mockRejectedValueOnce(new Error('Pet not found'));
 
     const { result } = renderHook(() => usePet(999));
 
@@ -64,17 +61,9 @@ describe('usePet', () => {
   });
 
   it('re-fetches when id changes', async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(samplePet),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ ...samplePet, id: 2, name: 'Bella' }),
-      });
+    mockStorage.getPet
+      .mockResolvedValueOnce(samplePet)
+      .mockResolvedValueOnce({ ...samplePet, id: 2, name: 'Bella' });
 
     const { result, rerender } = renderHook(
       (id: number | undefined) => usePet(id),

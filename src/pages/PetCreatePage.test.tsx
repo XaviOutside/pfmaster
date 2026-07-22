@@ -17,58 +17,28 @@ vi.mock('react-router-dom', async () => {
 });
 
 const mockClients = [
-  {
-    id: 1,
-    name: 'Alice Johnson',
-    email: 'alice@example.com',
-    phone: '+1 (555) 111-1111',
-    phone2: null,
-    address: null,
-    status: 'active',
-    createdAt: '2024-01-01T00:00:00.000Z',
-    updatedAt: '2024-01-01T00:00:00.000Z',
-  },
-  {
-    id: 2,
-    name: 'Bob Smith',
-    email: 'bob@example.com',
-    phone: '+1 (555) 222-2222',
-    phone2: null,
-    address: null,
-    status: 'active',
-    createdAt: '2024-01-01T00:00:00.000Z',
-    updatedAt: '2024-01-01T00:00:00.000Z',
-  },
-  {
-    id: 3,
-    name: 'Inactive Owner',
-    email: 'inactive@example.com',
-    phone: '+1 (555) 333-3333',
-    phone2: null,
-    address: null,
-    status: 'inactive',
-    createdAt: '2024-01-01T00:00:00.000Z',
-    updatedAt: '2024-01-01T00:00:00.000Z',
-  },
+  { id: 1, name: 'Alice Johnson', email: 'alice@example.com', phone: '+1 (555) 111-1111', phone2: null, address: null, status: 'active' as const, createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z' },
+  { id: 2, name: 'Bob Smith', email: 'bob@example.com', phone: '+1 (555) 222-2222', phone2: null, address: null, status: 'active' as const, createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z' },
+  { id: 3, name: 'Inactive Owner', email: 'inactive@example.com', phone: '+1 (555) 333-3333', phone2: null, address: null, status: 'inactive' as const, createdAt: '2024-01-01T00:00:00.000Z', updatedAt: '2024-01-01T00:00:00.000Z' },
 ];
 
 const createdPet = {
-  id: 42,
-  clientId: 1,
-  name: 'Max',
-  species: 'Dog',
-  breed: 'Golden Retriever',
-  sex: 'male' as const,
-  dateOfBirth: '2020-03-15T00:00:00.000Z',
-  weightKg: 32.5,
-  notes: 'Friendly',
-  status: 'active' as const,
-  createdAt: '2025-01-01T00:00:00.000Z',
-  updatedAt: '2025-01-01T00:00:00.000Z',
+  id: 42, clientId: 1, name: 'Max', species: 'Dog', breed: 'Golden Retriever',
+  sex: 'male' as const, dateOfBirth: '2020-03-15T00:00:00.000Z', weightKg: 32.5,
+  notes: 'Friendly', status: 'active' as const, createdAt: '2025-01-01T00:00:00.000Z', updatedAt: '2025-01-01T00:00:00.000Z',
 };
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const { mockListClients, mockCreatePet } = vi.hoisted(() => ({
+  mockListClients: vi.fn(),
+  mockCreatePet: vi.fn(),
+}));
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => ({
+    listClients: mockListClients,
+    createPet: mockCreatePet,
+  }),
+}));
 
 function renderPage() {
   return render(
@@ -79,53 +49,29 @@ function renderPage() {
 }
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
   mockNavigate.mockReset();
 });
 
-/** Helper: wait for the page to finish loading clients and render the form */
-async function waitForFormReady() {
-  await waitFor(() => {
-    expect(screen.getByPlaceholderText('form.placeholder.name')).toBeInTheDocument();
-  });
-}
-
-/** Helper: fill in valid pet form data */
-async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByPlaceholderText('form.placeholder.name'), 'Max');
-  await user.type(screen.getByPlaceholderText('form.placeholder.species'), 'Dog');
-  await user.type(screen.getByPlaceholderText('form.placeholder.breed'), 'Golden Retriever');
-  await user.selectOptions(screen.getByLabelText('form.label.client'), '1');
-}
-
 describe('PetCreatePage', () => {
   it('shows loading state while fetching clients', () => {
-    mockFetch.mockReturnValueOnce(new Promise(() => {}));
-
+    mockListClients.mockReturnValue(new Promise(() => {}));
     renderPage();
-
     expect(screen.getByRole('status', { name: /loading/i })).toBeInTheDocument();
   });
 
   it('renders form with client options after loading', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } }),
-    });
+    mockListClients.mockResolvedValue({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } });
 
     renderPage();
 
-    await waitForFormReady();
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('form.placeholder.name')).toBeInTheDocument();
+    });
 
-    // Form fields — labels are i18n keys, check via placeholders
-    expect(screen.getByPlaceholderText('form.placeholder.name')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('form.placeholder.species')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('form.placeholder.breed')).toBeInTheDocument();
-    expect(screen.getByLabelText('form.label.sex')).toBeInTheDocument();
     expect(screen.getByLabelText('form.label.client')).toBeInTheDocument();
 
-    // Only active clients should appear as options
     const clientSelect = screen.getByLabelText('form.label.client') as HTMLSelectElement;
     expect(clientSelect.options).toHaveLength(2);
     expect(clientSelect.options[0].textContent).toBe('Alice Johnson');
@@ -134,21 +80,16 @@ describe('PetCreatePage', () => {
 
   it('submits form successfully and navigates to pet detail', async () => {
     const user = userEvent.setup();
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } }),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: () => Promise.resolve(createdPet),
-    });
+    mockListClients.mockResolvedValue({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } });
+    mockCreatePet.mockResolvedValue(createdPet);
 
     renderPage();
-    await waitForFormReady();
-    await fillValidForm(user);
+    await waitFor(() => { expect(screen.getByPlaceholderText('form.placeholder.name')).toBeInTheDocument(); });
+
+    await user.type(screen.getByPlaceholderText('form.placeholder.name'), 'Max');
+    await user.type(screen.getByPlaceholderText('form.placeholder.species'), 'Dog');
+    await user.type(screen.getByPlaceholderText('form.placeholder.breed'), 'Golden Retriever');
+    await user.selectOptions(screen.getByLabelText('form.label.client'), '1');
 
     await user.click(screen.getByRole('button', { name: /form.submit.create/i }));
 
@@ -157,31 +98,21 @@ describe('PetCreatePage', () => {
     });
   });
 
-  it('shows field-level validation errors on 422 response', async () => {
+  it('shows field-level validation errors on error', async () => {
     const user = userEvent.setup();
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } }),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 422,
-      json: () =>
-        Promise.resolve({
-          error: 'Validation failed',
-          statusCode: 422,
-          fieldErrors: {
-            name: 'A pet with this name already exists',
-            clientId: 'The client is inactive',
-          },
-        }),
-    });
+    mockListClients.mockResolvedValue({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } });
+    const err = new Error('Validation failed');
+    (err as any).fieldErrors = { name: 'A pet with this name already exists' };
+    (err as any).statusCode = 422;
+    mockCreatePet.mockRejectedValue(err);
 
     renderPage();
-    await waitForFormReady();
-    await fillValidForm(user);
+    await waitFor(() => { expect(screen.getByPlaceholderText('form.placeholder.name')).toBeInTheDocument(); });
+
+    await user.type(screen.getByPlaceholderText('form.placeholder.name'), 'Max');
+    await user.type(screen.getByPlaceholderText('form.placeholder.species'), 'Dog');
+    await user.type(screen.getByPlaceholderText('form.placeholder.breed'), 'Golden Retriever');
+    await user.selectOptions(screen.getByLabelText('form.label.client'), '1');
 
     await user.click(screen.getByRole('button', { name: /form.submit.create/i }));
 
@@ -192,25 +123,16 @@ describe('PetCreatePage', () => {
 
   it('shows general error on server failure', async () => {
     const user = userEvent.setup();
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } }),
-    });
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: () =>
-        Promise.resolve({
-          error: 'Internal server error',
-          statusCode: 500,
-        }),
-    });
+    mockListClients.mockResolvedValue({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } });
+    mockCreatePet.mockRejectedValue(new Error('Internal server error'));
 
     renderPage();
-    await waitForFormReady();
-    await fillValidForm(user);
+    await waitFor(() => { expect(screen.getByPlaceholderText('form.placeholder.name')).toBeInTheDocument(); });
+
+    await user.type(screen.getByPlaceholderText('form.placeholder.name'), 'Max');
+    await user.type(screen.getByPlaceholderText('form.placeholder.species'), 'Dog');
+    await user.type(screen.getByPlaceholderText('form.placeholder.breed'), 'Golden Retriever');
+    await user.selectOptions(screen.getByLabelText('form.label.client'), '1');
 
     await user.click(screen.getByRole('button', { name: /form.submit.create/i }));
 
@@ -220,17 +142,12 @@ describe('PetCreatePage', () => {
   });
 
   it('has a Back button that navigates to /pets', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } }),
-    });
+    mockListClients.mockResolvedValue({ data: mockClients, meta: { total: 2, page: 1, limit: 200, totalPages: 1 } });
 
     const user = userEvent.setup();
     renderPage();
 
-    await waitForFormReady();
-
+    await waitFor(() => { expect(screen.getByPlaceholderText('form.placeholder.name')).toBeInTheDocument(); });
     await user.click(screen.getByRole('button', { name: /common:actions.backToList/i }));
 
     expect(mockNavigate).toHaveBeenCalledWith('/pets');

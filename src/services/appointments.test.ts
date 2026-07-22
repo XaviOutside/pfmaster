@@ -1,7 +1,3 @@
-/**
- * Tests for appointments API service.
- * Mirrors the pattern from client.test.ts — mock fetch, verify HTTP calls.
- */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   listAppointments,
@@ -11,11 +7,20 @@ import {
   cancelAppointment,
 } from './appointments';
 
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
+const mockStorage = {
+  listAppointments: vi.fn(),
+  getAppointment: vi.fn(),
+  createAppointment: vi.fn(),
+  updateAppointment: vi.fn(),
+  cancelAppointment: vi.fn(),
+};
+
+vi.mock('@/storage/storageContext', () => ({
+  getStorage: () => mockStorage,
+}));
 
 beforeEach(() => {
-  mockFetch.mockReset();
+  vi.clearAllMocks();
 });
 
 const mockAppointment = {
@@ -25,19 +30,15 @@ const mockAppointment = {
   clientId: 42,
   clientName: 'Maria Garcia',
   scheduledAt: '2026-07-20T14:00:00.000Z',
-  status: 0,
+  status: 0 as const,
   notes: 'First visit',
   createdAt: '2026-07-19T10:00:00.000Z',
   updatedAt: '2026-07-19T10:00:00.000Z',
 };
 
 describe('listAppointments', () => {
-  it('fetches appointments with date range params', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve([mockAppointment]),
-    });
+  it('delegates to storage.listAppointments with date range', async () => {
+    mockStorage.listAppointments.mockResolvedValueOnce([mockAppointment]);
 
     const start = '2026-07-20';
     const end = '2026-07-26';
@@ -45,29 +46,18 @@ describe('listAppointments', () => {
 
     expect(result).toEqual([mockAppointment]);
     expect(result).toHaveLength(1);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/appointments?start=2026-07-20&end=2026-07-26',
-      expect.anything(),
-    );
+    expect(mockStorage.listAppointments).toHaveBeenCalledWith(start, end);
   });
 
   it('returns empty array when no appointments', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve([]),
-    });
+    mockStorage.listAppointments.mockResolvedValueOnce([]);
 
     const result = await listAppointments('2026-07-20', '2026-07-26');
     expect(result).toEqual([]);
   });
 
-  it('throws HttpError on server error', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: () => Promise.resolve({ error: 'Internal server error' }),
-    });
+  it('propagates error from storage', async () => {
+    mockStorage.listAppointments.mockRejectedValueOnce(new Error('Internal server error'));
 
     await expect(
       listAppointments('2026-07-20', '2026-07-26'),
@@ -76,39 +66,24 @@ describe('listAppointments', () => {
 });
 
 describe('getAppointment', () => {
-  it('fetches a single appointment by id', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(mockAppointment),
-    });
+  it('delegates to storage.getAppointment by id', async () => {
+    mockStorage.getAppointment.mockResolvedValueOnce(mockAppointment);
 
     const result = await getAppointment(1);
     expect(result).toEqual(mockAppointment);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/appointments/1',
-      expect.anything(),
-    );
+    expect(mockStorage.getAppointment).toHaveBeenCalledWith(1);
   });
 
-  it('throws HttpError on 404', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: () => Promise.resolve({ error: 'Appointment not found' }),
-    });
+  it('propagates 404 error from storage', async () => {
+    mockStorage.getAppointment.mockRejectedValueOnce(new Error('Appointment not found'));
 
     await expect(getAppointment(999)).rejects.toThrow('Appointment not found');
   });
 });
 
 describe('createAppointment', () => {
-  it('POSTs appointment data and returns the created entity', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: () => Promise.resolve(mockAppointment),
-    });
+  it('delegates to storage.createAppointment with dto', async () => {
+    mockStorage.createAppointment.mockResolvedValueOnce(mockAppointment);
 
     const dto = {
       petId: 7,
@@ -119,21 +94,11 @@ describe('createAppointment', () => {
     const result = await createAppointment(dto);
 
     expect(result).toEqual(mockAppointment);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/appointments',
-      expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify(dto),
-      }),
-    );
+    expect(mockStorage.createAppointment).toHaveBeenCalledWith(dto);
   });
 
-  it('throws HttpError with conflict message on 409', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 409,
-      json: () => Promise.resolve({ error: 'Pet already booked' }),
-    });
+  it('propagates conflict error from storage', async () => {
+    mockStorage.createAppointment.mockRejectedValueOnce(new Error('Pet already booked'));
 
     await expect(
       createAppointment({ petId: 7, scheduledAt: '2026-07-20T14:00:00.000Z' }),
@@ -142,42 +107,23 @@ describe('createAppointment', () => {
 });
 
 describe('updateAppointment', () => {
-  it('PATCHes appointment data and returns updated entity', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ ...mockAppointment, status: 1 }),
-    });
+  it('delegates to storage.updateAppointment with id and dto', async () => {
+    mockStorage.updateAppointment.mockResolvedValueOnce({ ...mockAppointment, status: 1 as const });
 
     const result = await updateAppointment(1, { status: 1 });
 
     expect(result.status).toBe(1);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/appointments/1',
-      expect.objectContaining({
-        method: 'PATCH',
-        body: JSON.stringify({ status: 1 }),
-      }),
-    );
+    expect(mockStorage.updateAppointment).toHaveBeenCalledWith(1, { status: 1 });
   });
 });
 
 describe('cancelAppointment', () => {
-  it('DELETE cancels an appointment', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ ...mockAppointment, status: 3 }),
-    });
+  it('delegates to storage.cancelAppointment', async () => {
+    mockStorage.cancelAppointment.mockResolvedValueOnce({ ...mockAppointment, status: 3 as const });
 
     const result = await cancelAppointment(1);
 
     expect(result.status).toBe(3);
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/v1/appointments/1',
-      expect.objectContaining({
-        method: 'DELETE',
-      }),
-    );
+    expect(mockStorage.cancelAppointment).toHaveBeenCalledWith(1);
   });
 });
