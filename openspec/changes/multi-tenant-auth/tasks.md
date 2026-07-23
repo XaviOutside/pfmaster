@@ -45,14 +45,14 @@ Chain strategy: stacked-to-main
 
 ## Phase 3: Auth HTTP Layer + API Wiring (TDD)
 
-- [ ] 3.1 PrismaAuthRepository + integration test: Prisma `findUserByEmail`, `createSession` (UUID v4 token, expires_at), `findValidSession` (JOIN users + companies, check expires_at > NOW()), `invalidateSession` (soft-delete) → `api/auth/infrastructure/PrismaAuthRepository.ts` + `.integration.test.ts` (FR-AUTH-1, FR-AUTH-3)
-- [ ] 3.2 DTOs: `LoginRequestDto.ts` ({email, password}), `LoginResponseDto.ts` ({token, user}) with `toLoginResponseDto()` role TINYINT→string mapper → `api/auth/interface/dtos/`
-- [ ] 3.3 [RED] Write `AuthController.test.ts`: mock use cases throwing each error type → verify 401/422/204/500 mappings (FR-AUTH-1, FR-AUTH-2)
-- [ ] 3.4 [GREEN] Implement `AuthController.ts` + `authRouter.ts`: POST /login → 200 + token, POST /logout → 204, errorHandler for domain errors → `api/auth/interface/`
-- [ ] 3.5 [RED] Write `authMiddleware.test.ts`: token extraction (missing header, malformed Bearer, expired token), session validation (valid → sets req fields, invalid/expired → 401) → `api/auth/interface/` (FR-AUTH-3, FR-AUTH-4)
-- [ ] 3.6 [GREEN] Implement `authMiddleware.ts`: `createAuthMiddleware(repo)` → extract Bearer token → findValidSession → attach `req.companyId`, `req.userId`, `req.role` via Express declaration merging → `api/auth/interface/` (FR-AUTH-3, FR-AUTH-4)
-- [ ] 3.7 Wire `api/index.ts`: add `'Authorization'` to CORS `allowedHeaders` (L74), add auth rate limiter (5 req/15min on `/api/v1/auth/login`), mount `authMiddleware` BEFORE existing routes, mount `authRouter` at `/api/v1/auth` — login route excluded from middleware → `api/index.ts`
-- [ ] 3.8 Integration tests: POST /login → 200 with token + user, wrong pw → 401 (uniform message), short pw → 422, POST /logout → 204 → subsequent request → 401, GET /clients without token → 401, GET /clients with token → 200 (all delta specs: FR-AUTH-1 through FR-AUTH-4, services/pets/appointments delta gates) → `api/auth/` (use supertest against real app imported from `api/index.ts`)
+- [x] 3.1 PrismaAuthRepository + integration test: Prisma `findUserByEmail`, `createSession` (UUID v4 token, expires_at), `findValidSession` (JOIN users + companies, check expires_at > NOW()), `invalidateSession` (soft-delete) → `api/auth/infrastructure/PrismaAuthRepository.ts` + `.integration.test.ts` (FR-AUTH-1, FR-AUTH-3)
+- [x] 3.2 DTOs: `LoginRequestDto.ts` ({email, password}), `LoginResponseDto.ts` ({token, user}) with `toLoginResponseDto()` role TINYINT→string mapper → `api/auth/interface/dtos/`
+- [x] 3.3 [RED] Write `AuthController.test.ts`: mock use cases throwing each error type → verify 401/422/204/500 mappings (FR-AUTH-1, FR-AUTH-2)
+- [x] 3.4 [GREEN] Implement `AuthController.ts` + `authRouter.ts`: POST /login → 200 + token, POST /logout → 204, errorHandler for domain errors → `api/auth/interface/`
+- [x] 3.5 [RED] Write `authMiddleware.test.ts`: token extraction (missing header, malformed Bearer, expired token), session validation (valid → sets req fields, invalid/expired → 401) → `api/auth/interface/` (FR-AUTH-3, FR-AUTH-4)
+- [x] 3.6 [GREEN] Implement `authMiddleware.ts`: `createAuthMiddleware(repo)` → extract Bearer token → findValidSession → attach `req.companyId`, `req.userId`, `req.role` via Express declaration merging → `api/auth/interface/` (FR-AUTH-3, FR-AUTH-4)
+- [x] 3.7 Wire `api/index.ts`: add `'Authorization'` to CORS `allowedHeaders` (L74), add auth rate limiter (5 req/15min on `/api/v1/auth/login`), mount `authMiddleware` BEFORE existing routes, mount `authRouter` at `/api/v1/auth` — login route excluded from middleware → `api/index.ts`
+- [x] 3.8 Integration tests: POST /login → 200 with token + user, wrong pw → 401 (uniform message), short pw → 422, POST /logout → 204 → subsequent request → 401, GET /clients without token → 401, GET /clients with token → 200 (all delta specs: FR-AUTH-1 through FR-AUTH-4, services/pets/appointments delta gates) → `api/auth/` (use supertest against real app imported from `api/index.ts`)
 
 ## Phase 4: Frontend + Config + Cleanup
 

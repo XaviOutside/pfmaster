@@ -52,6 +52,13 @@ import { GetSettingsUseCase } from './settings/application/GetSettings';
 import { UpdateSettingsUseCase } from './settings/application/UpdateSettings';
 import { SettingsController } from './settings/interface/SettingsController';
 import { createSettingsRouter } from './settings/interface/settingsRouter';
+import { PrismaAuthRepository } from './auth/infrastructure/PrismaAuthRepository';
+import { Argon2PasswordService } from './auth/infrastructure/Argon2PasswordService';
+import { LoginUseCase } from './auth/application/LoginUseCase';
+import { LogoutUseCase } from './auth/application/LogoutUseCase';
+import { AuthController } from './auth/interface/AuthController';
+import { createAuthRouter } from './auth/interface/authRouter';
+import { createAuthMiddleware } from './auth/interface/authMiddleware';
 
 // Validate required environment variables at startup (skip in test environment)
 if (process.env['NODE_ENV'] !== 'test' && !process.env['DATABASE_URL']) {
@@ -71,7 +78,7 @@ app.use(helmet());
 app.use(cors({
   origin: process.env['CORS_ORIGIN'] ?? 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Rate limiting — 100 reqs/15min per IP in production; relaxed in dev
@@ -97,6 +104,37 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok' });
 });
+
+// ── Auth bounded context — wire dependencies ──────────────────────
+
+// Auth-specific rate limiter: 5 req/15min per IP on login (brute-force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 5 : 10_000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts, please try again later' },
+});
+
+const authRepository = new PrismaAuthRepository();
+const passwordService = new Argon2PasswordService();
+const sessionDurationHours = parseInt(
+  process.env['SESSION_DURATION_HOURS'] ?? '24',
+  10,
+);
+
+const authController = new AuthController(
+  new LoginUseCase(authRepository, passwordService, sessionDurationHours),
+  new LogoutUseCase(authRepository),
+);
+
+// Mount auth routes BEFORE the auth middleware so login/logout are public
+// Rate limit only applies to the auth router (login + logout)
+app.use('/api/v1/auth', authLimiter, createAuthRouter(authController));
+
+// Apply auth middleware AFTER auth routes but BEFORE all business routes.
+// All /api/v1/* routes below this line require a valid session token.
+app.use('/api/v1', createAuthMiddleware(authRepository));
 
 // Repositories — shared across bounded contexts for cascade operations
 const clientRepository = new PrismaClientRepository();
