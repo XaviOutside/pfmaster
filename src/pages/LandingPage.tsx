@@ -43,11 +43,6 @@ export default function LandingPage() {
     window.location.href = '/clients';
   }
 
-  function handleTryApi() {
-    setMode('api');
-    window.location.href = '/clients';
-  }
-
   return (
     <>
       {/* ── Hero Section ── */}
@@ -70,13 +65,12 @@ export default function LandingPage() {
             >
               {t('hero.cta')}
             </button>
-            <button
-              onClick={handleTryApi}
+            <NavLink
+              to="/login"
               className="inline-flex w-full items-center justify-center rounded-full bg-secondary-container px-8 py-3 text-label-md font-semibold text-on-secondary-container transition-colors hover:bg-secondary-fixed sm:w-auto"
-              type="button"
             >
               {t('hero.demo')}
-            </button>
+            </NavLink>
           </div>
         </div>
         <div className="relative mt-8 h-[400px] overflow-hidden rounded-2xl shadow-xl shadow-primary-container/20 md:mt-0 md:h-[500px]">
