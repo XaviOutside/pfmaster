@@ -122,24 +122,30 @@ test.describe('client search', () => {
     expect(searchApiCalled).toBe(true);
   });
 
-  test('searching by client name returns the matching client in the list', async ({ page }) => {
+  test('searching by client name filters the list and removes non-matching clients', async ({ page }) => {
     const searchInput = page.locator(SEARCH_INPUT);
+    const rows = page.locator(DATA_TABLE_ROW);
 
-    // Type a known client name from seed data (3+ chars, triggers auto-search via debounce)
+    // Sanity check: both Miguel and Laura are visible in the unfiltered initial list
+    await expect(rows.filter({ hasText: 'Miguel Fernández' })).toBeVisible();
+    await expect(rows.filter({ hasText: 'Laura López' })).toBeVisible();
+
+    const initialRowCount = await rows.count();
+
+    // Search for a name that matches only a subset of clients
     await searchInput.fill('Miguel');
 
-    // Wait for the search to complete and the table to update.
-    // The matching client should appear with their full name visible.
-    await expect(
-      page.locator(DATA_TABLE_ROW).filter({ hasText: 'Miguel Fernández' }),
-    ).toBeVisible({ timeout: 10000 });
+    // Wait for the search to complete — Miguel must still be in the filtered results
+    await expect(rows.filter({ hasText: 'Miguel Fernández' })).toBeVisible({ timeout: 10000 });
 
-    // The table should show only matching rows — not the full unfiltered list.
-    // At least 1 row (Miguel) and at most a few (e.g. pets with "Miguel" in notes).
-    const rows = page.locator(DATA_TABLE_ROW);
-    await expect(rows.first()).toBeVisible();
-    const rowCount = await rows.count();
-    expect(rowCount).toBeGreaterThanOrEqual(1);
+    // Proof that the search actually filtered: Laura does NOT contain "Miguel"
+    // and should be gone from the table after the search response updates the DOM
+    await expect(rows.filter({ hasText: 'Laura López' })).not.toBeVisible({ timeout: 5000 });
+
+    // The filtered list must be smaller than the initial unfiltered list
+    const filteredRowCount = await rows.count();
+    expect(filteredRowCount).toBeLessThan(initialRowCount);
+    expect(filteredRowCount).toBeGreaterThanOrEqual(1);
   });
 
   test('clicking search button with less than 3 characters does not make an API call', async ({ page }) => {
