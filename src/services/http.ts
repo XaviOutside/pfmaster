@@ -41,17 +41,39 @@ async function parseErrorResponse(res: Response): Promise<ApiError> {
   }
 }
 
+/**
+ * Reads the auth token from localStorage.
+ * Returns undefined if no token is stored (e.g., during login, before auth).
+ */
+function getAuthHeader(): string | undefined {
+  try {
+    const stored = localStorage.getItem('token');
+    if (stored) {
+      return `Bearer ${stored}`;
+    }
+  } catch {
+    // localStorage unavailable (SSR, test env without polyfill)
+  }
+  return undefined;
+}
+
 export async function http<T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> {
   const { body, headers: customHeaders, ...rest } = options;
 
+  const authHeader = getAuthHeader();
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
     ...(customHeaders as Record<string, string> | undefined),
   };
+
+  if (authHeader) {
+    headers['Authorization'] = authHeader;
+  }
 
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     ...rest,

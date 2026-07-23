@@ -91,17 +91,11 @@ describe('LandingPage', () => {
     expect(langButton).toBeInTheDocument();
   });
 
-  it('clicking "Log In" sets mode to api and navigates to /clients', async () => {
-    const user = userEvent.setup();
+  it('"Log In" button links to /login', () => {
     renderLanding();
 
-    const loginButton = screen.getByRole('button', { name: /hero.demo/i });
-    expect(loginButton).toBeInTheDocument();
-    expect(loginButton).toBeEnabled();
-
-    await user.click(loginButton);
-
-    expect(mockSetMode).toHaveBeenCalledWith('api');
-    expect(locationRef.href).toBe('/clients');
+    const loginLink = screen.getByRole('link', { name: /hero.demo/i });
+    expect(loginLink).toBeInTheDocument();
+    expect(loginLink).toHaveAttribute('href', '/login');
   });
 });

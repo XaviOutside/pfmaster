@@ -1,6 +1,65 @@
 import { PrismaClient } from '@prisma/client';
+import * as argon2 from 'argon2';
 
 const prisma = new PrismaClient();
+
+// ── Idempotent Seed Helpers ─────────────────────────────────────────
+
+export async function seedCompany(
+  client: PrismaClient,
+  name: string,
+): Promise<{ id: number; name: string; status: number }> {
+  const company = await client.company.upsert({
+    where: { id: 1 },
+    create: { id: 1, name, status: 1 },
+    update: {}, // no-op — preserve existing row
+  });
+
+  return company;
+}
+
+export async function seedAdminUser(
+  client: PrismaClient,
+  companyId: number,
+  email: string,
+  password: string,
+): Promise<{
+  id: number;
+  companyId: number;
+  email: string;
+  passwordHash: string;
+  role: number;
+  status: number;
+}> {
+  const hash = await argon2.hash(password, {
+    type: argon2.argon2id,
+    hashLength: 32,
+    memoryCost: 65536,
+    timeCost: 3,
+    parallelism: 4,
+  });
+
+  const user = await client.user.upsert({
+    where: { email },
+    create: {
+      companyId,
+      email,
+      passwordHash: hash,
+      role: 0, // admin
+      status: 1, // active
+    },
+    update: {}, // no-op — preserve existing row
+  });
+
+  return {
+    id: user.id,
+    companyId: user.companyId,
+    email: user.email,
+    passwordHash: user.passwordHash,
+    role: user.role,
+    status: user.status,
+  };
+}
 
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 9301 + 49297) * 233280;
@@ -52,8 +111,26 @@ function generatePetWeight(i: number): number | null {
   return Number((1 + seededRandom(i * 100 + 200) * 40).toFixed(1));
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 async function main() {
   console.log('🌱 Seeding pfmaster database…\n');
+
+  /* ── Company & Admin User (idempotent) ── */
+  const SEED_ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL;
+  const SEED_ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
+  if (!SEED_ADMIN_EMAIL || !SEED_ADMIN_PASSWORD) {
+    console.warn('⚠️  SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD must be set in .env — skipping admin user.');
+  }
+
+  const company = await seedCompany(prisma, 'Bark & Bubbles');
+  console.log(`✅ Company "${company.name}" (id=${company.id}) ready`);
+
+  if (SEED_ADMIN_PASSWORD) {
+    const admin = await seedAdminUser(prisma, company.id, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD);
+    console.log(`✅ Admin user "${admin.email}" (id=${admin.id}) ready`);
+  } else {
+    console.log('⚠️  Skipping admin user creation — set SEED_ADMIN_PASSWORD to create the admin user.');
+  }
 
   /* ── Clients ── */
   const clients = await Promise.all([
@@ -459,11 +536,14 @@ async function main() {
   console.log('   ✅ Pagination ready — 20+ items per entity');
 }
 
-main()
-  .catch((e) => {
-    console.error('❌ Seed failed:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// Only run when executed directly (e.g. `tsx prisma/seed.ts`), not when imported by tests
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.includes('prisma/seed')) {
+  main()
+    .catch((e) => {
+      console.error('❌ Seed failed:', e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

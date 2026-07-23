@@ -19,4 +19,8 @@ vi.mock('react-i18next', () => ({
       changeLanguage,
     },
   }),
+  initReactI18next: {
+    type: '3rdParty' as const,
+    init: () => {},
+  },
 }));

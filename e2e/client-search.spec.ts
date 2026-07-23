@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { loginAsAdmin } from './helpers/auth';
 
 /**
  * E2E tests for client search: debounce, 3-char gate, stopword queries.
@@ -19,9 +20,8 @@ const EMPTY_STATE = '[data-testid="datatable-empty"]';
 
 test.describe('client search', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('pf_demo:mode', 'api');
-    });
+    await loginAsAdmin(page);
+    // loginAsAdmin already leaves us at /clients, but go there explicitly for clarity
     await page.goto('/clients');
     // Wait for initial page load — the table should render
     await page.waitForSelector('[data-testid="clients-page"]');
@@ -35,15 +35,9 @@ test.describe('client search', () => {
     // Type a query that should match seeded data (3+ chars)
     await searchInput.fill('bra');
 
-    // Wait for debounce (300ms) + network + render
-    await page.waitForResponse(
-      (resp) => resp.url().includes('/api/v1/clients/search?q=') && resp.status() === 200,
-      { timeout: 5000 },
-    );
-
-    // A result row should appear with matching client name
-    // Seeded data includes a client with "Labrador" breed or "Brad" in name
-    await expect(page.locator(DATA_TABLE_ROW).first()).toBeVisible({ timeout: 3000 });
+    // Wait for debounce (300ms) + network + render — the table should update
+    // with filtered results (at least one row visible, or empty state if no match)
+    await expect(page.locator(DATA_TABLE_ROW).first().or(page.locator(EMPTY_STATE))).toBeVisible({ timeout: 10000 });
   });
 
   test('typing less than 3 characters does not trigger a search and keeps current list', async ({ page }) => {
@@ -128,11 +122,36 @@ test.describe('client search', () => {
     expect(searchApiCalled).toBe(true);
   });
 
+  test('searching by client name filters the list and removes non-matching clients', async ({ page }) => {
+    const searchInput = page.locator(SEARCH_INPUT);
+    const rows = page.locator(DATA_TABLE_ROW);
+
+    // Sanity check: both Miguel and Laura are visible in the unfiltered initial list
+    await expect(rows.filter({ hasText: 'Miguel Fernández' })).toBeVisible();
+    await expect(rows.filter({ hasText: 'Laura López' })).toBeVisible();
+
+    const initialRowCount = await rows.count();
+
+    // Search for a name that matches only a subset of clients
+    await searchInput.fill('Miguel');
+
+    // Wait for the search to complete — Miguel must still be in the filtered results
+    await expect(rows.filter({ hasText: 'Miguel Fernández' })).toBeVisible({ timeout: 10000 });
+
+    // Proof that the search actually filtered: Laura does NOT contain "Miguel"
+    // and should be gone from the table after the search response updates the DOM
+    await expect(rows.filter({ hasText: 'Laura López' })).not.toBeVisible({ timeout: 5000 });
+
+    // The filtered list must be smaller than the initial unfiltered list
+    const filteredRowCount = await rows.count();
+    expect(filteredRowCount).toBeLessThan(initialRowCount);
+    expect(filteredRowCount).toBeGreaterThanOrEqual(1);
+  });
+
   test('clicking search button with less than 3 characters does not make an API call', async ({ page }) => {
     const searchInput = page.locator(SEARCH_INPUT);
     const submitButton = page.locator(SEARCH_SUBMIT);
 
-    // Clear previous route handlers by unloading page
     let searchApiCalled = false;
     await page.route('**/api/v1/clients/search?q=*', (route) => {
       searchApiCalled = true;

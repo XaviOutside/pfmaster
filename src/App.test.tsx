@@ -21,16 +21,17 @@ beforeEach(() => {
 });
 
 describe('App routing — public routes', () => {
-  it('redirects "/" to "/clients" when mode is resolved', async () => {
+  it('renders LandingPage at "/" when mode is resolved', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>,
     );
 
-    // Redirected to clients page — client list container visible
+    // Landing page renders with hero CTA buttons (no auto-redirect in current App)
     await waitFor(() => {
-      expect(screen.getByTestId('clients-page')).toBeInTheDocument();
+      expect(screen.getByText('hero.cta')).toBeInTheDocument();
+      expect(screen.getByText('hero.demo')).toBeInTheDocument();
     });
   });
 });
