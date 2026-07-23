@@ -10,6 +10,7 @@ import landingEs from '@/locales/es/landing.json';
 import validationEs from '@/locales/es/validation.json';
 import settingsEs from '@/locales/es/settings.json';
 import appointmentsEs from '@/locales/es/appointments.json';
+import loginEs from '@/locales/es/login.json';
 
 import commonEn from '@/locales/en/common.json';
 import clientsEn from '@/locales/en/clients.json';
@@ -19,6 +20,7 @@ import landingEn from '@/locales/en/landing.json';
 import validationEn from '@/locales/en/validation.json';
 import settingsEn from '@/locales/en/settings.json';
 import appointmentsEn from '@/locales/en/appointments.json';
+import loginEn from '@/locales/en/login.json';
 
 import { getSettings } from '@/services/settings';
 import { LANG_MAP } from '@/types/settings';
@@ -37,6 +39,7 @@ i18n
         validation: validationEs,
         settings: settingsEs,
         appointments: appointmentsEs,
+        login: loginEs,
       },
       en: {
         common: commonEn,
@@ -47,6 +50,7 @@ i18n
         validation: validationEn,
         settings: settingsEn,
         appointments: appointmentsEn,
+        login: loginEn,
       },
     },
     fallbackLng: 'en',

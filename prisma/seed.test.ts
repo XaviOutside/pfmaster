@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 
 // RED: These imports will fail because the functions don't exist yet in seed.ts

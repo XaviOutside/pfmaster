@@ -12,6 +12,7 @@ import PetCreatePage from '@/pages/PetCreatePage';
 import PetDetailPage from '@/pages/PetDetailPage';
 import PetEditPage from '@/pages/PetEditPage';
 import RegisterPage from '@/pages/RegisterPage';
+import LoginPage from '@/pages/LoginPage';
 import PrivacyPage from '@/pages/PrivacyPage';
 import TermsPage from '@/pages/TermsPage';
 import ServicesPage from '@/pages/ServicesPage';
@@ -46,6 +47,7 @@ export default function App() {
       {/* Public routes — full-width, no sidebar/mobile nav */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />

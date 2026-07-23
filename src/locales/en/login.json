@@ -1,0 +1,18 @@
+{
+  "title": "Log In",
+  "subtitle": "Sign in to your account",
+  "email": {
+    "label": "Email",
+    "placeholder": "you@example.com"
+  },
+  "password": {
+    "label": "Password",
+    "placeholder": "Enter your password"
+  },
+  "submit": "Log In",
+  "submitting": "Signing in…",
+  "error": {
+    "invalidCredentials": "Invalid email or password",
+    "generic": "Something went wrong. Please try again."
+  }
+}

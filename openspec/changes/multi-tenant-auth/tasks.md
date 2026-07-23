@@ -56,12 +56,12 @@ Chain strategy: stacked-to-main
 
 ## Phase 4: Frontend + Config + Cleanup
 
-- [ ] 4.1 LoginPage: email/password form with `type="password"`, loading state (disabled submit + spinner), inline error on 401, store token+user in `localStorage`, redirect to `/clients` → `src/pages/LoginPage.tsx` + `.test.tsx` (FR-AUTH-LOGIN)
-- [ ] 4.2 HTTP client: inject `Authorization: Bearer <token>` from `localStorage` into all requests; handle missing token gracefully (proceed without header) → `src/services/http.ts` + update `http.test.ts` (FR-AUTH-HEADER)
-- [ ] 4.3 Add `/login` route inside `PublicLayout` → `src/App.tsx`
-- [ ] 4.4 Config: add `argon2` to `package.json` dependencies; add `SESSION_DURATION_HOURS=24`, `ARGON2_MEMORY_COST=65536`, `ARGON2_TIME_COST=3`, `ARGON2_PARALLELISM=4`, `SEED_ADMIN_PASSWORD` to `.env.example`
-- [ ] 4.5 Verify Docker build: if `argon2` fails native compilation on Alpine, add `gcc make python3` to `docker/Dockerfile` RUN step; rebuild with `docker compose build api`
-- [ ] 4.6 Run full test suite: `npm run gate` (lint + build + test) — verify no regressions; `npm run test:integration` — verify all passing
+- [x] 4.1 LoginPage: email/password form with `type="password"`, loading state (disabled submit + spinner), inline error on 401, store token+user in `localStorage`, redirect to `/clients` → `src/pages/LoginPage.tsx` + `.test.tsx` (FR-AUTH-LOGIN)
+- [x] 4.2 HTTP client: inject `Authorization: Bearer <token>` from `localStorage` into all requests; handle missing token gracefully (proceed without header) → `src/services/http.ts` + update `http.test.ts` (FR-AUTH-HEADER)
+- [x] 4.3 Add `/login` route inside `PublicLayout` → `src/App.tsx`
+- [x] 4.4 Config: add `argon2` to `package.json` dependencies; add `SESSION_DURATION_HOURS=24`, `ARGON2_MEMORY_COST=65536`, `ARGON2_TIME_COST=3`, `ARGON2_PARALLELISM=4`, `SEED_ADMIN_PASSWORD` to `.env.example`
+- [x] 4.5 Verify Docker build: if `argon2` fails native compilation on Alpine, add `gcc make python3` to `docker/Dockerfile` RUN step; rebuild with `docker compose build api`
+- [x] 4.6 Run full test suite: `npm run gate` (lint + build + test) — verify no regressions; `npm run test:integration` — verify all passing
 
 ---
 

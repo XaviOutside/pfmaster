@@ -23,6 +23,7 @@ let request: supertest.SuperTest<supertest.Test>;
 // Seed credentials — must match prisma/seed.ts
 const SEED_EMAIL = 'admin@peluclic.com';
 const SEED_PASSWORD = process.env['SEED_ADMIN_PASSWORD'] ?? 'admin123';
+// eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
 const INVALID_PASSWORD = 'wrongpassword123456';
 
 beforeAll(async () => {
@@ -69,6 +70,7 @@ describe('POST /api/v1/auth/login', () => {
   it('returns 422 when password is less than 8 characters', async () => {
     const res = await request
       .post('/api/v1/auth/login')
+      // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
       .send({ email: SEED_EMAIL, password: 'short' });
 
     expect(res.status).toBe(422);

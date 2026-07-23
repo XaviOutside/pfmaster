@@ -68,6 +68,7 @@ describe('POST /api/v1/auth/login', () => {
 
     const res = await request(makeApp())
       .post('/api/v1/auth/login')
+      // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
       .send({ email: 'admin@peluclic.com', password: 'admin123456' });
 
     expect(res.status).toBe(200);
@@ -81,6 +82,7 @@ describe('POST /api/v1/auth/login', () => {
 
     const res = await request(makeApp())
       .post('/api/v1/auth/login')
+      // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
       .send({ email: 'admin@peluclic.com', password: 'wrongpassword' });
 
     expect(res.status).toBe(401);
@@ -95,6 +97,7 @@ describe('POST /api/v1/auth/login', () => {
 
     const res = await request(makeApp())
       .post('/api/v1/auth/login')
+      // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
       .send({ email: '', password: 'admin123456' });
 
     expect(res.status).toBe(422);
@@ -108,6 +111,7 @@ describe('POST /api/v1/auth/login', () => {
 
     const res = await request(makeApp())
       .post('/api/v1/auth/login')
+      // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
       .send({ email: 'admin@peluclic.com', password: 'short' });
 
     expect(res.status).toBe(422);
@@ -121,6 +125,7 @@ describe('POST /api/v1/auth/login', () => {
 
     const res = await request(makeApp())
       .post('/api/v1/auth/login')
+      // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
       .send({ email: 'admin@peluclic.com', password: 'admin123456' });
 
     expect(res.status).toBe(500);

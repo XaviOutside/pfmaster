@@ -10,6 +10,7 @@ const mockUser: User = {
   id: 1,
   companyId: 1,
   email: 'admin@peluclic.com',
+  // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test hash, not a real password
   passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$hash',
   role: USER_ROLE.ADMIN,
   status: USER_STATUS.ACTIVE,

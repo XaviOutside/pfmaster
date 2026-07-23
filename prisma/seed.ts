@@ -111,6 +111,7 @@ function generatePetWeight(i: number): number | null {
   return Number((1 + seededRandom(i * 100 + 200) * 40).toFixed(1));
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 async function main() {
   console.log('🌱 Seeding pfmaster database…\n');
 

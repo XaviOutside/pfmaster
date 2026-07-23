@@ -11,7 +11,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response } from 'express';
 import { createAuthMiddleware } from './authMiddleware';
 import type { IAuthRepository } from '../domain/IAuthRepository';
 import type { SessionWithUser } from '../domain/Session';

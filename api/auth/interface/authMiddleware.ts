@@ -8,6 +8,7 @@ import type { IAuthRepository } from '../domain/IAuthRepository';
  * the auth middleware validates the session.
  */
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       companyId: number;
