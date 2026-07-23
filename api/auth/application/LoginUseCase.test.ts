@@ -10,7 +10,7 @@ const mockUser: User = {
   id: 1,
   companyId: 1,
   companyName: 'Default Company',
-  email: 'admin@peluclic.com',
+  email: 'test@example.com',
   // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test hash, not a real password
   passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$hash',
   role: USER_ROLE.ADMIN,
@@ -63,7 +63,7 @@ describe('LoginUseCase', () => {
     vi.mocked(repository.findUserByEmail).mockResolvedValue(mockUser);
     vi.mocked(passwordService.verify).mockResolvedValue(true);
 
-    const result = await useCase.execute('admin@peluclic.com', 'correct-password');
+    const result = await useCase.execute('test@example.com', 'correct-password');
 
     expect(result).toEqual({
       token: mockSession.token,
@@ -75,7 +75,7 @@ describe('LoginUseCase', () => {
         companyName: 'Default Company',
       },
     });
-    expect(repository.findUserByEmail).toHaveBeenCalledWith('admin@peluclic.com');
+    expect(repository.findUserByEmail).toHaveBeenCalledWith('test@example.com');
     expect(passwordService.verify).toHaveBeenCalledWith('correct-password', mockUser.passwordHash);
     expect(repository.createSession).toHaveBeenCalledOnce();
   });
@@ -85,7 +85,7 @@ describe('LoginUseCase', () => {
     vi.mocked(passwordService.verify).mockResolvedValue(false);
 
     await expect(
-      useCase.execute('admin@peluclic.com', 'wrong-password'),
+      useCase.execute('test@example.com', 'wrong-password'),
     ).rejects.toThrow(InvalidCredentialsError);
     expect(repository.createSession).not.toHaveBeenCalled();
   });
@@ -102,7 +102,7 @@ describe('LoginUseCase', () => {
 
   it('throws validation error when password is shorter than 8 characters', async () => {
     await expect(
-      useCase.execute('admin@peluclic.com', 'short'),
+      useCase.execute('test@example.com', 'short'),
     ).rejects.toThrow('Password must be at least 8 characters');
     expect(repository.findUserByEmail).not.toHaveBeenCalled();
   });
@@ -116,7 +116,7 @@ describe('LoginUseCase', () => {
 
   it('throws validation error when password is empty', async () => {
     await expect(
-      useCase.execute('admin@peluclic.com', ''),
+      useCase.execute('test@example.com', ''),
     ).rejects.toThrow('Password must be at least 8 characters');
     expect(repository.findUserByEmail).not.toHaveBeenCalled();
   });
@@ -126,7 +126,7 @@ describe('LoginUseCase', () => {
     vi.mocked(repository.findUserByEmail).mockResolvedValue(mockUser);
     vi.mocked(passwordService.verify).mockResolvedValue(true);
 
-    await useCase.execute('admin@peluclic.com', 'correct-password');
+    await useCase.execute('test@example.com', 'correct-password');
 
     const calledWith = vi.mocked(repository.createSession).mock.calls[0];
     const expiresAt = calledWith[2] as Date;

@@ -22,7 +22,7 @@ const loginResult: LoginResult = {
   token: '550e8400-e29b-41d4-a716-446655440000',
   user: {
     id: 1,
-    email: 'admin@peluclic.com',
+    email: 'test@example.com',
     role: 0,
     companyId: 1,
     companyName: 'Default Company',
@@ -34,7 +34,7 @@ const loginResponseDto = {
   token: '550e8400-e29b-41d4-a716-446655440000',
   user: {
     id: 1,
-    email: 'admin@peluclic.com',
+    email: 'test@example.com',
     role: 'admin',
     companyId: 1,
     companyName: 'Default Company',
@@ -69,7 +69,7 @@ describe('POST /api/v1/auth/login', () => {
     const res = await request(makeApp())
       .post('/api/v1/auth/login')
       // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
-      .send({ email: 'admin@peluclic.com', password: 'admin123456' });
+      .send({ email: 'test@example.com', password: 'admin123456' });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(loginResponseDto);
@@ -83,7 +83,7 @@ describe('POST /api/v1/auth/login', () => {
     const res = await request(makeApp())
       .post('/api/v1/auth/login')
       // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
-      .send({ email: 'admin@peluclic.com', password: 'wrongpassword' });
+      .send({ email: 'test@example.com', password: 'wrongpassword' });
 
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ error: 'Invalid email or password' });
@@ -112,7 +112,7 @@ describe('POST /api/v1/auth/login', () => {
     const res = await request(makeApp())
       .post('/api/v1/auth/login')
       // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
-      .send({ email: 'admin@peluclic.com', password: 'short' });
+      .send({ email: 'test@example.com', password: 'short' });
 
     expect(res.status).toBe(422);
     expect(res.body).toEqual({ error: 'Password must be at least 8 characters' });
@@ -126,7 +126,7 @@ describe('POST /api/v1/auth/login', () => {
     const res = await request(makeApp())
       .post('/api/v1/auth/login')
       // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture
-      .send({ email: 'admin@peluclic.com', password: 'admin123456' });
+      .send({ email: 'test@example.com', password: 'admin123456' });
 
     expect(res.status).toBe(500);
     expect(res.body).toEqual({ error: 'Internal server error' });
