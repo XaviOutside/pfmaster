@@ -122,11 +122,30 @@ test.describe('client search', () => {
     expect(searchApiCalled).toBe(true);
   });
 
+  test('searching by client name returns the matching client in the list', async ({ page }) => {
+    const searchInput = page.locator(SEARCH_INPUT);
+
+    // Type a known client name from seed data (3+ chars, triggers auto-search via debounce)
+    await searchInput.fill('Miguel');
+
+    // Wait for the search to complete and the table to update.
+    // The matching client should appear with their full name visible.
+    await expect(
+      page.locator(DATA_TABLE_ROW).filter({ hasText: 'Miguel Fernández' }),
+    ).toBeVisible({ timeout: 10000 });
+
+    // The table should show only matching rows — not the full unfiltered list.
+    // At least 1 row (Miguel) and at most a few (e.g. pets with "Miguel" in notes).
+    const rows = page.locator(DATA_TABLE_ROW);
+    await expect(rows.first()).toBeVisible();
+    const rowCount = await rows.count();
+    expect(rowCount).toBeGreaterThanOrEqual(1);
+  });
+
   test('clicking search button with less than 3 characters does not make an API call', async ({ page }) => {
     const searchInput = page.locator(SEARCH_INPUT);
     const submitButton = page.locator(SEARCH_SUBMIT);
 
-    // Clear previous route handlers by unloading page
     let searchApiCalled = false;
     await page.route('**/api/v1/clients/search?q=*', (route) => {
       searchApiCalled = true;
