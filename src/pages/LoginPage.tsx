@@ -79,6 +79,10 @@ export default function LoginPage() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
+      // Force API mode — ensures data goes through the backend even if the user
+      // previously clicked "Try Demo" which set pf_demo:mode to 'demo'.
+      localStorage.setItem('pf_demo:mode', 'api');
+
       // Redirect to clients page
       window.location.href = '/clients';
     } catch (err) {

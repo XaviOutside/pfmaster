@@ -141,6 +141,8 @@ describe('LoginPage', () => {
       role: 'admin',
     });
     expect(window.location.href).toBe('/clients');
+    // Login must force API mode — even if user previously chose demo
+    expect(localStorage.getItem('pf_demo:mode')).toBe('api');
   });
 
   it('shows inline error on 401 response', async () => {
